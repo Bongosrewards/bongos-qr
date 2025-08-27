@@ -270,6 +270,32 @@
 
   loadData();
 </script>
+<script>
+// existing helper:
+function $(id){ return document.getElementById(id); }
+
+// UPDATED allow(): remember approval
+function allow(){
+  try { localStorage.setItem('bongos21', '1'); } catch(e){}
+  $('ageGate').style.display = 'none';
+}
+
+// deny unchanged
+function deny(){
+  const msg = document.getElementById('gateMsg');
+  if (msg) msg.textContent = 'Sorry, you must be 21+.';
+}
+
+// NEW: auto-hide gate if already approved
+(function(){
+  try {
+    if (localStorage.getItem('bongos21') === '1') {
+      var gate = document.getElementById('ageGate');
+      if (gate) gate.style.display = 'none';
+    }
+  } catch(e){}
+})();
+</script>
 
 </body>
 </html>
