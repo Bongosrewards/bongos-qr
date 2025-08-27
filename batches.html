@@ -36,18 +36,18 @@
 <body>
 <div class="wrap">
   <header>
-    <img src="https://raw.githubusercontent.com/Bongosrewards/bongos-rewards/main/Bongos%20Logo%20Final.png" alt="Bongos" />
+    <img src="https://raw.githubusercontent.com/Bongosrewards/bongos-qr/main/Bongos%20Logo%20Final.png" alt="Bongos" />
     <div>
       <div class="pill">RI CCC Product Information</div>
       <h1>All Batches / SKUs</h1>
-      <div class="muted small">Click a row to view the product info page for that batch.</div>
+      <div class="muted small">Click a row to open the product info page for that batch.</div>
     </div>
   </header>
 
   <section class="card">
     <div class="controls">
       <div class="row">
-        <input id="q" type="search" placeholder="Search SKU, Variant, Batch, UID, Store…" />
+        <input id="q" type="search" placeholder="Search SKU, Variant, Batch, UID, Retailer…" />
         <select id="sort">
           <option value="date:desc">Sort by Date (newest)</option>
           <option value="date:asc">Sort by Date (oldest)</option>
@@ -81,12 +81,13 @@
 </div>
 
 <script>
-/* ====== CONFIG ======
-   Adjust INDEX_PATH if your landing page file name/path differs. */
-const INDEX_PATH = 'index.html'; // or '' if index is at repo root, or 'product/index.html'
+/* ====== CONFIG ====== */
+/* Your detail page path on GitHub Pages. Using an absolute path avoids subpath issues. */
+const INDEX_PATH = '/bongos-qr/index.html';
+
+/* Default CSV (your current published link). You can override at runtime with ?csv= */
 const DEFAULT_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRANCJ9YvLtG-RUHj8M7n4DMY9OnYCUVqUHV5aekLKwPST7FZ7MCuLBxH_LzvCF2_Wnng9d6CbRQAeV/pub?gid=0&single=true&output=csv';
 
-// Allow runtime override: ?csv=ENCODED_URL
 const qs = new URLSearchParams(location.search);
 const overrideCsv = qs.get('csv');
 const CSV_URL = overrideCsv ? decodeURIComponent(overrideCsv) : DEFAULT_CSV;
@@ -110,24 +111,31 @@ async function getRows(){
   if(!res.ok) throw new Error('HTTP '+res.status+' '+res.statusText);
   const text = await res.text();
   const table = parseCSV(text);
-  const headers = table.shift().map(h => (h||'').trim());
+  if(!table || !table.length) throw new Error('Empty CSV');
 
-  // Map a row to an object with case-insensitive header lookup
+  const headers = table.shift().map(h => (h||'').trim());
   const lower = headers.map(h => h.toLowerCase());
-  const keyIndex = name => lower.indexOf(name.toLowerCase());
+
+  const alias = (obj, toKey, ...candidates) => {
+    for (const c of candidates) {
+      const idx = lower.indexOf(String(c).toLowerCase());
+      if (idx >= 0) { obj[toKey] = (obj._row[idx] || '').trim(); return; }
+    }
+    obj[toKey] = '';
+  };
+
   const rows = table.map(r => {
-    const obj = {};
-    headers.forEach((h,i) => obj[h] = (r[i] || '').trim());
-    // Also add normalized convenience keys
-    obj.variant = obj.variant || obj['Variant'] || obj['VARIANT'] || '';
-    obj.sku = obj.sku || obj['SKU'] || '';
-    obj.batch = obj.batch || obj['Batch'] || '';
-    obj.date = obj.date || obj['Date'] || obj['Manufacture Date'] || '';
-    obj.uid = obj.uid || obj['UID'] || obj['Seed-to-Sale UID'] || '';
-    obj.ret_name = obj.ret_name || obj['ret_name'] || obj['Retailer'] || obj['Store'] || '';
-    obj.form = obj.form || obj['form'] || obj['Form'] || '';
-    return obj;
+    const o = {_row:r};
+    alias(o, 'variant', 'variant','Variant','VARIANT','Flavor','Product Variant');
+    alias(o, 'sku', 'sku','SKU','Sku');
+    alias(o, 'batch', 'batch','Batch','Batch / Lot','Lot','Lot #');
+    alias(o, 'date', 'date','Harvest / Mfg Date','Manufacture Date','Mfg Date','Harvest Date','Date');
+    alias(o, 'uid', 'uid','Seed-to-Sale UID','UID','Seed to Sale UID');
+    alias(o, 'ret_name', 'ret_name','Retailer','Store','Where did you buy Bongos?','Sold by');
+    alias(o, 'form', 'form','form','Form','Rewards Form','Google Form');
+    return o;
   });
+
   return rows;
 }
 
@@ -141,13 +149,11 @@ let ALL_ROWS = [];
 let VIEW = [];
 
 function render(){
-  // filter
   const term = (q.value || '').trim().toLowerCase();
   const filtered = !term ? ALL_ROWS : ALL_ROWS.filter(r => {
     return [r.variant, r.sku, r.batch, r.uid, r.ret_name].some(v => (v||'').toLowerCase().includes(term));
   });
 
-  // sort
   const [key, dir] = (sortSel.value || 'date:desc').split(':');
   filtered.sort((a,b) => {
     const va = (a[key] || '').toLowerCase();
@@ -156,19 +162,19 @@ function render(){
     return (dir === 'asc') ? (va < vb ? -1 : 1) : (va > vb ? -1 : 1);
   });
 
-  // draw
   tbody.innerHTML = '';
   filtered.forEach(r => {
     const tr = document.createElement('tr');
+
     const cells = [
       r.variant || '—',
       r.sku || '—',
       r.batch || '—',
       r.date || '—',
       r.uid || '—',
-      r.ret_name || '—',
+      r.ret_name || '—'
     ];
-    cells.forEach((c,i) => {
+    cells.forEach(c => {
       const td = document.createElement('td');
       td.textContent = c;
       tr.appendChild(td);
@@ -176,11 +182,11 @@ function render(){
 
     const tdOpen = document.createElement('td');
     const link = document.createElement('a');
-    // Build link to index with sku & batch; pass through ?csv= if present
-    const base = INDEX_PATH || 'index.html';
+
+    // Link to your detail page. Pass sku & batch. Preserve ?csv= if present.
     const params = new URLSearchParams({ sku: r.sku || '', batch: r.batch || '' });
     if (overrideCsv) params.set('csv', overrideCsv);
-    link.href = `${base}?${params.toString()}`;
+    link.href = `${INDEX_PATH}?${params.toString()}`;
     link.className = 'btn';
     link.target = '_blank';
     link.rel = 'noopener';
@@ -198,10 +204,10 @@ function render(){
 (async function init(){
   try{
     const rows = await getRows();
-    ALL_ROWS = rows.filter(r => (r.sku || r.variant || r.batch)); // basic sanity
+    ALL_ROWS = rows.filter(r => (r.sku || r.variant || r.batch));
     if(!ALL_ROWS.length){
       warn.style.display='block';
-      warn.textContent = 'CSV loaded, but no rows found. Check headers like SKU, Variant, Batch.';
+      warn.textContent = 'CSV loaded, but no recognizable rows were found. Check that your sheet has headers like “SKU”, “Variant”, and “Batch / Lot”.';
     }
     render();
   }catch(e){
