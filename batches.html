@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Bongos — Batch Listing</title>
+<style>
+  :root{
+    --brand:#0f9d58; --ink:#0b1220; --muted:#5b6471; --bg:#fff; --panel:#f6f8fa;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg)}
+  .wrap{max-width:980px;margin:0 auto;padding:20px}
+  header{display:flex;align-items:center;gap:12px;margin:8px 0 18px}
+  header img{height:44px}
+  h1{font-size:22px;margin:6px 0 10px}
+  .card{background:var(--panel);border:1px solid #e6e8eb;border-radius:var(--radius);padding:14px 16px;margin:14px 0}
+  .muted{color:var(--muted)}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  input[type="search"]{padding:10px 12px;border:1px solid #d1d5db;border-radius:10px;min-width:260px}
+  select{padding:10px 12px;border:1px solid #d1d5db;border-radius:10px}
+  table{width:100%;border-collapse:separate;border-spacing:0;border:1px solid #e6e8eb;border-radius:12px;overflow:hidden;background:#fff}
+  th,td{padding:12px 10px;text-align:left;border-bottom:1px solid #eef1f4;font-size:14px}
+  th{background:#f9fafb;font-weight:700;white-space:nowrap;cursor:pointer;user-select:none}
+  tr:hover td{background:#fafcff}
+  .btn{display:inline-block;background:var(--brand);color:#fff;text-decoration:none;border:none;border-radius:10px;padding:8px 12px;font-weight:700}
+  .pill{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid #d7e7dd;background:#eff9f3;font-size:12px}
+  .msg{background:#fff8e1;border:1px solid #ffe08a;padding:10px;border-radius:10px;margin-top:8px;display:none}
+  .err{background:#fdecea;border:1px solid #f5c2c7;color:#842029;display:none;padding:10px;border-radius:10px;margin-top:8px}
+  .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .right{margin-left:auto}
+  .small{font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <img src="https://raw.githubusercontent.com/Bongosrewards/bongos-rewards/main/Bongos%20Logo%20Final.png" alt="Bongos" />
+    <div>
+      <div class="pill">RI CCC Product Information</div>
+      <h1>All Batches / SKUs</h1>
+      <div class="muted small">Click a row to view the product info page for that batch.</div>
+    </div>
+  </header>
+
+  <section class="card">
+    <div class="controls">
+      <div class="row">
+        <input id="q" type="search" placeholder="Search SKU, Variant, Batch, UID, Store…" />
+        <select id="sort">
+          <option value="date:desc">Sort by Date (newest)</option>
+          <option value="date:asc">Sort by Date (oldest)</option>
+          <option value="sku:asc">Sort by SKU (A→Z)</option>
+          <option value="sku:desc">Sort by SKU (Z→A)</option>
+          <option value="variant:asc">Sort by Variant (A→Z)</option>
+          <option value="variant:desc">Sort by Variant (Z→A)</option>
+        </select>
+      </div>
+      <div class="right muted small" id="statusText">Loading…</div>
+    </div>
+
+    <div id="warn" class="msg"></div>
+    <div id="err" class="err">Couldn’t load CSV. Ensure this page is hosted (https) and the CSV link is public.</div>
+
+    <div style="overflow:auto">
+      <table id="tbl" aria-live="polite">
+        <thead><tr>
+          <th data-key="variant">Variant</th>
+          <th data-key="sku">SKU</th>
+          <th data-key="batch">Batch</th>
+          <th data-key="date">Date</th>
+          <th data-key="uid">UID</th>
+          <th data-key="ret_name">Retailer</th>
+          <th>Open</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<script>
+/* ====== CONFIG ======
+   Adjust INDEX_PATH if your landing page file name/path differs. */
+const INDEX_PATH = 'index.html'; // or '' if index is at repo root, or 'product/index.html'
+const DEFAULT_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRANCJ9YvLtG-RUHj8M7n4DMY9OnYCUVqUHV5aekLKwPST7FZ7MCuLBxH_LzvCF2_Wnng9d6CbRQAeV/pub?gid=0&single=true&output=csv';
+
+// Allow runtime override: ?csv=ENCODED_URL
+const qs = new URLSearchParams(location.search);
+const overrideCsv = qs.get('csv');
+const CSV_URL = overrideCsv ? decodeURIComponent(overrideCsv) : DEFAULT_CSV;
+
+/* ====== CSV helpers ====== */
+function parseCSV(text){
+  const rows=[];let i=0,field='',row=[],inQ=false;
+  function ef(){row.push(field);field='';}
+  function er(){rows.push(row);row=[];}
+  while(i<text.length){const c=text[i];
+    if(inQ){ if(c=='"'){ if(text[i+1]=='"'){field+='"';i++;} else {inQ=false;} } else {field+=c;} }
+    else { if(c=='"'){inQ=true;} else if(c==','){ef();} else if(c=='\r'){} else if(c=='\n'){ef();er();} else {field+=c;} }
+    i++;
+  }
+  if(field.length||row.length){ef();er();}
+  return rows;
+}
+
+async function getRows(){
+  const res = await fetch(CSV_URL, {cache:'no-store'});
+  if(!res.ok) throw new Error('HTTP '+res.status+' '+res.statusText);
+  const text = await res.text();
+  const table = parseCSV(text);
+  const headers = table.shift().map(h => (h||'').trim());
+
+  // Map a row to an object with case-insensitive header lookup
+  const lower = headers.map(h => h.toLowerCase());
+  const keyIndex = name => lower.indexOf(name.toLowerCase());
+  const rows = table.map(r => {
+    const obj = {};
+    headers.forEach((h,i) => obj[h] = (r[i] || '').trim());
+    // Also add normalized convenience keys
+    obj.variant = obj.variant || obj['Variant'] || obj['VARIANT'] || '';
+    obj.sku = obj.sku || obj['SKU'] || '';
+    obj.batch = obj.batch || obj['Batch'] || '';
+    obj.date = obj.date || obj['Date'] || obj['Manufacture Date'] || '';
+    obj.uid = obj.uid || obj['UID'] || obj['Seed-to-Sale UID'] || '';
+    obj.ret_name = obj.ret_name || obj['ret_name'] || obj['Retailer'] || obj['Store'] || '';
+    obj.form = obj.form || obj['form'] || obj['Form'] || '';
+    return obj;
+  });
+  return rows;
+}
+
+/* ====== Render ====== */
+const $ = id => document.getElementById(id);
+const tbody = $('tbl').querySelector('tbody');
+const q = $('q'); const sortSel = $('sort'); const statusText = $('statusText');
+const warn = $('warn'); const err = $('err');
+
+let ALL_ROWS = [];
+let VIEW = [];
+
+function render(){
+  // filter
+  const term = (q.value || '').trim().toLowerCase();
+  const filtered = !term ? ALL_ROWS : ALL_ROWS.filter(r => {
+    return [r.variant, r.sku, r.batch, r.uid, r.ret_name].some(v => (v||'').toLowerCase().includes(term));
+  });
+
+  // sort
+  const [key, dir] = (sortSel.value || 'date:desc').split(':');
+  filtered.sort((a,b) => {
+    const va = (a[key] || '').toLowerCase();
+    const vb = (b[key] || '').toLowerCase();
+    if(va === vb) return 0;
+    return (dir === 'asc') ? (va < vb ? -1 : 1) : (va > vb ? -1 : 1);
+  });
+
+  // draw
+  tbody.innerHTML = '';
+  filtered.forEach(r => {
+    const tr = document.createElement('tr');
+    const cells = [
+      r.variant || '—',
+      r.sku || '—',
+      r.batch || '—',
+      r.date || '—',
+      r.uid || '—',
+      r.ret_name || '—',
+    ];
+    cells.forEach((c,i) => {
+      const td = document.createElement('td');
+      td.textContent = c;
+      tr.appendChild(td);
+    });
+
+    const tdOpen = document.createElement('td');
+    const link = document.createElement('a');
+    // Build link to index with sku & batch; pass through ?csv= if present
+    const base = INDEX_PATH || 'index.html';
+    const params = new URLSearchParams({ sku: r.sku || '', batch: r.batch || '' });
+    if (overrideCsv) params.set('csv', overrideCsv);
+    link.href = `${base}?${params.toString()}`;
+    link.className = 'btn';
+    link.target = '_blank';
+    link.rel = 'noopener';
+    link.textContent = 'Open';
+    tdOpen.appendChild(link);
+    tr.appendChild(tdOpen);
+
+    tbody.appendChild(tr);
+  });
+
+  VIEW = filtered;
+  statusText.textContent = `${filtered.length} of ${ALL_ROWS.length} batches`;
+}
+
+(async function init(){
+  try{
+    const rows = await getRows();
+    ALL_ROWS = rows.filter(r => (r.sku || r.variant || r.batch)); // basic sanity
+    if(!ALL_ROWS.length){
+      warn.style.display='block';
+      warn.textContent = 'CSV loaded, but no rows found. Check headers like SKU, Variant, Batch.';
+    }
+    render();
+  }catch(e){
+    console.error(e);
+    err.style.display='block';
+  }
+})();
+
+q.addEventListener('input', render);
+sortSel.addEventListener('change', render);
+</script>
+</body>
+</html>
