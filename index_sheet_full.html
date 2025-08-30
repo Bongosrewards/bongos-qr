@@ -29,20 +29,20 @@
     .warn{background:var(--warn);border:1px solid var(--warn-border);border-radius:12px;padding:12px}
     footer{margin:28px 0 18px;color:var(--muted);font-size:13px}
     .badge{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border:1px dashed #c9d1d9;border-radius:8px;font-size:13px;background:#fff}
-    .u-icon{width:18px;height:18px;display:inline-block;background:#000;color:#fff;border-radius:4px;font:700 12px/18px system-ui;text-align:center}
     .gate{position:fixed;inset:0;background:rgba(11,18,32,.85);display:flex;align-items:center;justify-content:center;z-index:99}
     .gate .panel{background:#fff;max-width:520px;width:92%;border-radius:16px;padding:20px;border:1px solid #e6e8eb;text-align:center}
     .msg{background:#fff8e1;border:1px solid #ffe08a;padding:12px;border-radius:10px;margin-top:8px;display:none}
     .err{background:#fdecea;border:1px solid #f5c2c7;color:#842029;display:none}
     .ok{background:#e8f5ee;border:1px solid #cfe9dd;display:none}
+    @media (max-width:720px){.grid{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
 
-<div id="ageGate" class="gate">
+<div id="ageGate" class="gate" role="dialog" aria-modal="true" aria-labelledby="gateTitle">
   <div class="panel">
     <img src="https://raw.githubusercontent.com/Bongosrewards/bongos-rewards/main/Bongos%20Logo%20Final.png" alt="Bongos" style="height:52px;margin-bottom:6px" />
-    <h1>Are you 21 or older?</h1>
+    <h1 id="gateTitle">Are you 21 or older?</h1>
     <div class="row" style="justify-content:center;margin-top:10px">
       <button class="btn" onclick="allow()">Yes, enter</button>
       <button class="btn secondary" onclick="deny()">No</button>
@@ -62,23 +62,111 @@
 
   <section class="card" id="productCore">
     <h1 id="prodName">Bongos Mixtails — <span id="variant">Loading…</span></h1>
+
+    <div class="grid">
+      <div>
+        <h3>Core Details</h3>
+        <div id="coreList" class="muted">
+          <div><strong>Manufactured by:</strong> <span id="mfgName">—</span> — License <span id="mfgLic">—</span></div>
+          <div><strong>Sold by:</strong> <span id="retName">—</span> — License <span id="retLic">—</span></div>
+          <div><strong>Seed-to-Sale UID:</strong> <span id="uid">—</span></div>
+          <div><strong>Batch / Lot:</strong> <span id="batch">—</span></div>
+          <div><strong>Harvest / Mfg Date:</strong> <span id="date">—</span></div>
+        </div>
+      </div>
+
+      <div>
+        <h3>Cannabinoid Profile</h3>
+        <div class="grid">
+          <div class="card" style="padding:10px">
+            <div class="muted">THC (per serving)</div>
+            <div style="font-weight:800;font-size:20px" id="thcServing">—</div>
+          </div>
+          <div class="card" style="padding:10px">
+            <div class="muted">THC (per package)</div>
+            <div style="font-weight:800;font-size:20px" id="thcPackage">—</div>
+          </div>
+        </div>
+        <div class="muted" style="margin-top:6px">
+          <strong>Servings:</strong> <span id="servings">—</span> • <strong>Serving Size:</strong> <span id="servingSize">—</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="row" style="margin-top:10px">
+      <span class="badge" style="padding:0; border:none; background:transparent;">
+        <img 
+          src="/bongos-qr/assets/ri-universal-warning.png"
+          alt="Rhode Island Universal Cannabis Warning Symbol (Contains THC)"
+          style="height:96px; width:96px;" />
+      </span>
+      <span class="badge">Poison Control: (800) 222-1222</span>
+    </div>
+
     <div class="msg" id="status">Loading batch details…</div>
     <div class="err" id="statusErr">Couldn’t load from sheet. Must be hosted (GitHub Pages/Netlify).</div>
     <div class="ok" id="statusOk">Loaded from sheet.</div>
   </section>
 
   <section class="card">
+    <h2>Required Warnings</h2>
+    <div class="warn">
+      <ul style="margin:0 0 0 18px">
+        <li>This product contains cannabis. Store securely locked away from children.</li>
+        <li>It is unlawful to transport this product outside of Rhode Island.</li>
+        <li>Cannabis use may impair your ability to operate a motor vehicle or machinery.</li>
+        <li>Consumption while pregnant or breastfeeding may be harmful.</li>
+        <li id="smokeWarn" style="display:none">Smoking and Vaping is hazardous to your health.</li>
+        <li id="delayWarn"><strong>Effects of this product may be delayed.</strong></li>
+        <li id="topWarn" style="display:none">For Topical Application – Do Not Eat or Smoke.</li>
+      </ul>
+    </div>
+    <p class="muted" style="margin-top:8px">Warning formatting for packaging may differ; displayed here prominently for clarity.</p>
+  </section>
+
+  <section class="card">
+    <h2>Additional Required Information</h2>
+    <details open>
+      <summary>Ingredients & Additives</summary>
+      <div id="ingredients" class="muted">—</div>
+    </details>
+    <details>
+      <summary>Pesticides / Herbicides / Fertilizers Used</summary>
+      <div id="agChems" class="muted">—</div>
+    </details>
+    <details>
+      <summary>Processing Technique / Solvents</summary>
+      <div id="process" class="muted">—</div>
+    </details>
+    <details>
+      <summary>Remediation Status</summary>
+      <div id="remediation" class="muted">—</div>
+    </details>
+    <details>
+      <summary>Certificates of Analysis (COA)</summary>
+      <div class="muted">View third-party lab results: <a id="coaLink" href="#" target="_blank" rel="noopener">Open COA</a></div>
+    </details>
+  </section>
+
+  <section class="card">
     <h2>Earn Points with Bongos Rewards</h2>
     <p class="muted">Earn points toward rewards and event invites.</p>
     <div class="cta">
-     <a id="rewardsBtn" class="btn"
-   href="https://docs.google.com/forms/d/1hkN3ogyKxFmgsB-5kI8EPFX2OJKdFh2iI-fcS_8Cduk/viewform"
-   target="_blank" rel="noopener">
-  Earn Points
-</a>
-
-       <a class="btn secondary" href="#faq">How It Works</a>
+      <a id="rewardsBtn" class="btn"
+         href="https://docs.google.com/forms/d/1hkN3ogyKxFmgsB-5kI8EPFX2OJKdFh2iI-fcS_8Cduk/viewform"
+         target="_blank" rel="noopener">
+        Earn Points
+      </a>
+      <a class="btn secondary" href="#faq">How It Works</a>
     </div>
+  </section>
+
+  <section class="card" id="faq">
+    <h2>FAQ</h2>
+    <h3>Why this page?</h3>
+    <p class="muted">Rhode Island regulations allow required product information to be provided via a Commission-approved QR code. This page gives you that info in one place, plus a link to optional rewards.</p>
+    <h3>Privacy</h3>
+    <p class="muted">Scanning this QR doesn’t enroll you in anything. You can view info without sharing data. Rewards are optional.</p>
   </section>
 
   <footer>
@@ -91,64 +179,124 @@
     csvUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRANCJ9YvLtG-RUHj8M7n4DMY9OnYCUVqUHV5aekLKwPST7FZ7MCuLBxH_LzvCF2_Wnng9d6CbRQAeV/pub?gid=0&single=true&output=csv'
   };
 
-  function $(id){return document.getElementById(id);}
-  function allow(){ $('ageGate').style.display='none'; }
-  function deny(){ $('gateMsg').textContent='Sorry, you must be 21+.'; }
+  const $ = (id) => document.getElementById(id);
+  const qs = new URLSearchParams(location.search);
+  const get = (k, d='') => qs.get(k) || d;
+  const setText = (id, v) => { const el = $(id); if (el && v != null && v !== '') el.textContent = v; };
+  const setHref = (id, v) => { const el = $(id); if (el && v) el.href = v; };
+
+  function allow(){ try{ localStorage.setItem('bongos21','1'); }catch(e){} $('ageGate').style.display='none'; }
+  function deny(){ const m=$('gateMsg'); if(m) m.textContent='Sorry, you must be 21+.'; }
+  (function(){ try{ if(localStorage.getItem('bongos21')==='1'){ const g=$('ageGate'); if(g) g.style.display='none'; } }catch(e){} })();
+
   $('year').textContent = new Date().getFullYear();
 
   function parseCSV(text){
-    const rows=[],row=[],len=text.length;let i=0,f='',q=false;
-    while(i<len){const c=text[i];
-      if(q){if(c=='"'){if(text[i+1]=='"'){f+='"';i++;}else{q=false;}}else{f+=c;}}
-      else{if(c=='"'){q=true;}else if(c==','){row.push(f);f='';}else if(c=='\n'){row.push(f);rows.push(row.slice());row.length=0;f='';}else{f+=c;}}
+    const rows=[]; let i=0, field='', row=[], inQuotes=false;
+    function endField(){ row.push(field); field=''; }
+    function endRow(){ rows.push(row); row=[]; }
+    while(i<text.length){
+      const c=text[i];
+      if(inQuotes){
+        if(c==='"'){ if(text[i+1]==='"'){ field+='"'; i++; } else { inQuotes=false; } }
+        else { field+=c; }
+      }else{
+        if(c==='"') inQuotes=true;
+        else if(c===',') endField();
+        else if(c==='\r'){ }
+        else if(c==='\n'){ endField(); endRow(); }
+        else field+=c;
+      }
       i++;
     }
+    if(field.length || row.length){ endField(); endRow(); }
     return rows;
   }
 
-  async function loadData(){
-    try{
-      const res=await fetch(CONFIG.csvUrl);
-      const text=await res.text();
-      const data=parseCSV(text);
-      const headers=data.shift();
-      const idx=name=>headers.findIndex(h=>h.toLowerCase()==name.toLowerCase());
-      const val=(row,name)=>row[idx(name)]||'';
-      const match=data[0];
-      $('variant').textContent=val(match,'variant');
-      $('prodName').textContent='Bongos Mixtails — '+val(match,'variant');
-      $('rewardsBtn').href=val(match,'form');
-      $('status').style.display='none';
-      $('statusOk').style.display='block';
-    }catch(e){$('status').style.display='none';$('statusErr').style.display='block';}
+  function idxOf(headers, name){
+    return headers.findIndex(h => (h||'').toLowerCase().trim() === name.toLowerCase().trim());
   }
-  loadData();
-</script>
-<script>
-// existing helper:
-function $(id){ return document.getElementById(id); }
-
-// UPDATED allow(): remember approval
-function allow(){
-  try { localStorage.setItem('bongos21', '1'); } catch(e){}
-  $('ageGate').style.display = 'none';
-}
-
-// deny unchanged
-function deny(){
-  const msg = document.getElementById('gateMsg');
-  if (msg) msg.textContent = 'Sorry, you must be 21+.';
-}
-
-// NEW: auto-hide gate if already approved
-(function(){
-  try {
-    if (localStorage.getItem('bongos21') === '1') {
-      var gate = document.getElementById('ageGate');
-      if (gate) gate.style.display = 'none';
+  function norm(v){ return String(v||'').trim().toLowerCase(); }
+  function findMatch(table, headers, skuWanted, batchWanted){
+    const isku = idxOf(headers,'sku');
+    const ibatch = idxOf(headers,'batch');
+    if (skuWanted && batchWanted) {
+      const m = table.find(r => norm(r[isku])===skuWanted && norm(r[ibatch])===batchWanted);
+      if (m) return m;
     }
-  } catch(e){}
-})();
+    if (skuWanted) {
+      const m = table.find(r => norm(r[isku])===skuWanted);
+      if (m) return m;
+    }
+    if (batchWanted) {
+      const m = table.find(r => norm(r[ibatch])===batchWanted);
+      if (m) return m;
+    }
+    if (skuWanted) {
+      const m = table.find(r => norm(r[isku]).startsWith(skuWanted));
+      if (m) return m;
+    }
+    if (batchWanted) {
+      const m = table.find(r => norm(r[ibatch]).startsWith(batchWanted));
+      if (m) return m;
+    }
+    return table[0] || null;
+  }
+
+  async function loadData(){
+    const skuWanted = norm(get('sku',''));
+    const batchWanted = norm(get('batch',''));
+    const status = $('status'), ok = $('statusOk'), err = $('statusErr');
+    status.style.display='block'; ok.style.display='none'; err.style.display='none';
+
+    try{
+      const res = await fetch(CONFIG.csvUrl, { cache:'no-store' });
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      const text = await res.text();
+      const table = parseCSV(text);
+      const headers = table.shift().map(h => (h||'').trim());
+
+      const match = findMatch(table, headers, skuWanted, batchWanted);
+      if(!match) throw new Error('No matching row');
+
+      const idx = (name) => headers.findIndex(h => h.toLowerCase()===name.toLowerCase());
+      const val = (name) => { const i = idx(name); return i>=0 ? (match[i]||'').trim() : ''; };
+
+      const variant = val('variant');
+      setText('variant', variant || '—');
+      setText('prodName', 'Bongos Mixtails — ' + (variant || '—'));
+      const sSku = val('sku'); if (sSku) setText('skuLine', 'SKU: ' + sSku);
+
+      setText('mfgName', val('mfg_name')); setText('mfgLic', val('mfg_lic'));
+      setText('retName', val('ret_name')); setText('retLic', val('ret_lic'));
+      setText('uid', val('uid')); setText('batch', val('batch')); setText('date', val('date'));
+      setText('thcServing', val('thc_serving')); setText('thcPackage', val('thc_package'));
+      setText('servings', val('servings')); setText('servingSize', val('serving_size'));
+      $('ingredients').textContent = val('ingredients');
+      $('agChems').textContent = val('agchem');
+      $('process').textContent = val('process');
+      $('remediation').textContent = val('remediation');
+
+      setHref('coaLink', val('coa'));
+
+      const formFromSheet = val('form') || val('Form') || val('Google Form') || val('Rewards Form');
+      const formFallback = 'https://docs.google.com/forms/d/1hkN3ogyKxFmgsB-5kI8EPFX2OJKdFh2iI-fcS_8Cduk/viewform';
+      const finalForm = (formFromSheet && formFromSheet.trim()) ? formFromSheet.trim() : formFallback;
+      const btn = $('rewardsBtn'); if (btn) { btn.href = finalForm; btn.target = '_blank'; btn.rel = 'noopener'; }
+
+      const t = (val('type')||'infused').toLowerCase();
+      $('smokeWarn').style.display = (t==='smokable'||t==='vapable') ? '' : 'none';
+      $('topWarn').style.display = (t==='topical') ? '' : 'none';
+      $('delayWarn').style.display = (t==='infused') ? '' : '';
+
+      status.style.display='none'; ok.style.display='block';
+    }catch(e){
+      console.error(e);
+      status.style.display='none'; err.style.display='block';
+    }
+  }
+
+  loadData();
 </script>
 
 </body>
