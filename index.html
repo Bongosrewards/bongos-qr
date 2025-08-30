@@ -93,13 +93,11 @@
     </div>
     <div class="row" style="margin-top:10px">
       <span class="badge" style="padding:0; border:none; background:transparent;">
-  <img 
-  src="assets"
-  alt="Rhode Island Universal Cannabis Warning Symbol (Contains THC)"
-  style="height:96px; width:96px;" />
-
-</span>
-
+        <img 
+          src="/bongos-qr/assets/ri-universal-warning.png"
+          alt="Rhode Island Universal Cannabis Warning Symbol (Contains THC)"
+          style="height:96px; width:96px;" />
+      </span>
       <span class="badge">Poison Control: (800) 222-1222</span>
     </div>
     <div id="status" class="msg">Loading batch details…</div>
@@ -149,11 +147,10 @@
     <p class="muted">Earn points toward rewards and event invites.</p>
     <div class="cta">
       <a id="rewardsBtn" class="btn"
-   href="https://docs.google.com/forms/d/1hkN3ogyKxFmgsB-5kI8EPFX2OJKdFh2iI-fcS_8Cduk/viewform"
-   target="_blank" rel="noopener">
-  Earn Points
-</a>
-
+         href="https://docs.google.com/forms/d/1hkN3ogyKxFmgsB-5kI8EPFX2OJKdFh2iI-fcS_8Cduk/viewform"
+         target="_blank" rel="noopener">
+        Earn Points
+      </a>
       <a class="btn secondary" href="#faq">How It Works</a>
     </div>
   </section>
@@ -176,19 +173,21 @@
     csvUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRANCJ9YvLtG-RUHj8M7n4DMY9OnYCUVqUHV5aekLKwPST7FZ7MCuLBxH_LzvCF2_Wnng9d6CbRQAeV/pub?gid=0&single=true&output=csv'
   };
 
-  // Age gate
-  function $(id){return document.getElementById(id);}
-  function allow(){ $('ageGate').style.display='none'; }
-  function deny(){ $('gateMsg').textContent='Sorry, you must be 21+ to view this content.'; }
-  $('year').textContent = new Date().getFullYear();
-
-  // Helpers
+  const $ = (id) => document.getElementById(id);
   const qs = new URLSearchParams(location.search);
   const get = (k, d='') => qs.get(k) || d;
   const setText = (id, v) => { const el = $(id); if(el && v!=null && v!=='') el.textContent = v; };
   const setHref = (id, v) => { const el = $(id); if(el && v) el.href = v; };
 
-  // Robust CSV parser for simple cases, handles quotes/commas
+  function allow(){
+    try { localStorage.setItem('bongos21', '1'); } catch(e){}
+    $('ageGate').style.display='none';
+  }
+  function deny(){ $('gateMsg').textContent='Sorry, you must be 21+ to view this content.'; }
+  (function(){ try{ if(localStorage.getItem('bongos21')==='1'){ const g=$('ageGate'); if(g) g.style.display='none'; } }catch(e){} })();
+
+  $('year').textContent = new Date().getFullYear();
+
   function parseCSV(text) {
     const rows = [];
     let i = 0, field = '', row = [], inQuotes = false;
@@ -204,7 +203,7 @@
       } else {
         if (c === '"') inQuotes = true;
         else if (c === ',') endField();
-        else if (c === '\r') { /* skip */ }
+        else if (c === '\r') { }
         else if (c === '\n') { endField(); endRow(); }
         else field += c;
       }
@@ -214,40 +213,61 @@
     return rows;
   }
 
+  function idxOf(headers, name){
+    return headers.findIndex(h => (h||'').toLowerCase().trim() === name.toLowerCase().trim());
+  }
+  function norm(v){ return String(v||'').trim().toLowerCase(); }
+  function findMatch(table, headers, skuWanted, batchWanted){
+    const isku = idxOf(headers,'sku');
+    const ibatch = idxOf(headers,'batch');
+    if (skuWanted && batchWanted) {
+      const m = table.find(r => norm(r[isku])===skuWanted && norm(r[ibatch])===batchWanted);
+      if (m) return m;
+    }
+    if (skuWanted) {
+      const m = table.find(r => norm(r[isku])===skuWanted);
+      if (m) return m;
+    }
+    if (batchWanted) {
+      const m = table.find(r => norm(r[ibatch])===batchWanted);
+      if (m) return m;
+    }
+    if (skuWanted) {
+      const m = table.find(r => norm(r[isku]).startsWith(skuWanted));
+      if (m) return m;
+    }
+    if (batchWanted) {
+      const m = table.find(r => norm(r[ibatch]).startsWith(batchWanted));
+      if (m) return m;
+    }
+    return table[0] || null;
+  }
+
   async function loadData() {
-    const skuWanted = get('sku','').toLowerCase();
-    const batchWanted = get('batch','').toLowerCase();
+    const skuWanted = norm(get('sku',''));
+    const batchWanted = norm(get('batch',''));
     const status = $('status');
     status.style.display = 'block';
     status.className = 'msg';
 
     try {
-      // NOTE: Fetching a remote CSV requires serving this page over http(s).
-      // If you open this file via file:// the browser may block the request.
       const res = await fetch(CONFIG.csvUrl, { cache: 'no-store' });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const text = await res.text();
       const table = parseCSV(text);
-      const headers = table.shift().map(h => h.trim());
-      const idx = (name) => headers.findIndex(h => h.toLowerCase()===name.toLowerCase());
+      const headers = table.shift().map(h => (h||'').trim());
 
-      const iSku = idx('sku'), iBatch = idx('batch');
-
-      // Find matching row (SKU + batch)
-      let match = null;
-      for (const r of table) {
-        const sku = (r[iSku]||'').trim().toLowerCase();
-        const batch = (r[iBatch]||'').trim().toLowerCase();
-        if ((!skuWanted || sku===skuWanted) && (!batchWanted || batch===batchWanted)) { match = r; break; }
-      }
+      const match = findMatch(table, headers, skuWanted, batchWanted);
       if (!match) throw new Error('No matching row. Pass ?sku=...&batch=... or check your sheet.');
 
-      function val(name) { const i = idx(name); return i>=0 ? (match[i]||'').trim() : ''; }
+      const idx = (name) => headers.findIndex(h => h.toLowerCase()===name.toLowerCase());
+      const val = (name) => { const i = idx(name); return i>=0 ? (match[i]||'').trim() : ''; };
 
-      // Populate
-      setText('variant', val('variant'));
-      setText('prodName', 'Bongos Mixtails — ' + (val('variant')||'—'));
+      const variant = val('variant');
+      setText('variant', variant || '—');
+      setText('prodName', 'Bongos Mixtails — ' + (variant || '—'));
       setText('skuLine', 'SKU: ' + (val('sku')||'—'));
+
       setText('mfgName', val('mfg_name')); setText('mfgLic', val('mfg_lic'));
       setText('retName', val('ret_name')); setText('retLic', val('ret_lic'));
       setText('uid', val('uid')); setText('batch', val('batch')); setText('date', val('date'));
@@ -257,10 +277,14 @@
       $('agChems').textContent = val('agchem');
       $('process').textContent = val('process');
       $('remediation').textContent = val('remediation');
-      setHref('coaLink', val('coa'));
-      setHref('rewardsBtn', val('form'));
 
-      // Warnings toggle
+      setHref('coaLink', val('coa'));
+
+      const formFromSheet = val('form') || val('Form') || val('Google Form') || val('Rewards Form');
+      const formFallback = 'https://docs.google.com/forms/d/1hkN3ogyKxFmgsB-5kI8EPFX2OJKdFh2iI-fcS_8Cduk/viewform';
+      const finalForm = (formFromSheet && formFromSheet.trim()) ? formFromSheet.trim() : formFallback;
+      setHref('rewardsBtn', finalForm);
+
       const t = (val('type')||'infused').toLowerCase();
       $('smokeWarn').style.display = (t==='smokable'||t==='vapable') ? '' : 'none';
       $('topWarn').style.display = (t==='topical') ? '' : 'none';
@@ -277,33 +301,8 @@
 
   loadData();
 </script>
-<script>
-// existing helper:
-function $(id){ return document.getElementById(id); }
-
-// UPDATED allow(): remember approval
-function allow(){
-  try { localStorage.setItem('bongos21', '1'); } catch(e){}
-  $('ageGate').style.display = 'none';
-}
-
-// deny unchanged
-function deny(){
-  const msg = document.getElementById('gateMsg');
-  if (msg) msg.textContent = 'Sorry, you must be 21+.';
-}
-
-// NEW: auto-hide gate if already approved
-(function(){
-  try {
-    if (localStorage.getItem('bongos21') === '1') {
-      var gate = document.getElementById('ageGate');
-      if (gate) gate.style.display = 'none';
-    }
-  } catch(e){}
-})();
-</script>
 
 </body>
 </html>
+
 
