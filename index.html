@@ -251,7 +251,9 @@
     status.className = 'msg';
 
     try {
-      const res = await fetch(CONFIG.csvUrl, { cache: 'no-store' });
+      const bust = 't=' + Date.now();
+const url  = CONFIG.csvUrl + (CONFIG.csvUrl.includes('?') ? '&' : '?') + bust;
+const res  = await fetch(url, { cache: 'no-store' });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const text = await res.text();
       const table = parseCSV(text);
