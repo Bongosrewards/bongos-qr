@@ -8,8 +8,8 @@
   <style>
     :root{
       --brand:#0f9d58;
-      --ink:#0b1220; --muted:#5b6471; --bg:#ffffff; --panel:#f6f8fa; --warn:#fff3cd; --warn-border:#ffe08a;
-      --radius:14px;
+      --ink:#0b1220; --muted:#5b6471; --bg:#ffffff; --panel:#f6f8fa;
+      --warn:#fff3cd; --warn-border:#ffe08a; --radius:14px;
     }
     *{box-sizing:border-box}
     body{margin:0;font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg)}
@@ -30,15 +30,18 @@
     .warn{background:var(--warn);border:1px solid var(--warn-border);border-radius:12px;padding:12px}
     footer{margin:28px 0 18px;color:var(--muted);font-size:13px}
     .badge{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border:1px dashed #c9d1d9;border-radius:8px;font-size:13px;background:#fff}
-    .u-icon{width:18px;height:18px;display:inline-block;background:#000;color:#fff;border-radius:4px;font:700 12px/18px system-ui;text-align:center}
     .gate{position:fixed;inset:0;background:rgba(11,18,32,.85);display:flex;align-items:center;justify-content:center;z-index:99}
     .gate .panel{background:#fff;max-width:520px;width:92%;border-radius:16px;padding:20px;border:1px solid #e6e8eb;text-align:center}
     @media (max-width:720px){.grid{grid-template-columns:1fr}}
+
     .msg{background:#fff8e1;border:1px solid #ffe08a;padding:12px;border-radius:10px;margin-top:8px;display:none}
     .err{background:#fdecea;border:1px solid #f5c2c7;color:#842029}
     .ok{background:#e8f5ee;border:1px solid #cfe9dd}
 
-    /* --- Nutrition Facts (FDA-style) --- */
+    details{background:#fff;border:1px solid #e6e8eb;border-radius:12px;padding:12px}
+    details summary{cursor:pointer;font-weight:800}
+
+    /* Nutrition Facts look */
     .nf-wrap{background:#fff;border:2px solid #000;border-radius:12px;padding:14px;max-width:520px}
     .nf-title{font-weight:900;font-size:28px;line-height:1;margin:0 0 10px}
     .nf-sub{font-size:13px;margin:0 0 8px}
@@ -50,6 +53,9 @@
     .nf-right{white-space:nowrap}
     details.nf-details{background:#fff;border:1px solid #e6e8eb;border-radius:12px;padding:12px}
     details.nf-details summary{cursor:pointer;font-weight:800}
+
+    /* Make button element match anchors */
+    button.btn{font:inherit;line-height:inherit;-webkit-appearance:none;appearance:none}
   </style>
 </head>
 
@@ -60,8 +66,8 @@
     <img src="https://raw.githubusercontent.com/Bongosrewards/bongos-rewards/main/Bongos%20Logo%20Final.png" alt="Bongos" style="height:90px;" />
     <h1 id="gateTitle">Are you 21 or older?</h1>
     <div class="row" style="justify-content:center;margin-top:10px">
-      <button class="btn" id="gateYes" type="button">Yes, enter</button>
-      <button class="btn secondary" id="gateNo" type="button">No</button>
+      <button class="btn" type="button" onclick="allow()">Yes, enter</button>
+      <button class="btn secondary" type="button" onclick="deny()">No</button>
     </div>
     <p id="gateMsg" class="muted" style="margin-top:12px"></p>
   </div>
@@ -110,12 +116,11 @@
     </div>
 
     <div class="row" style="margin-top:10px">
-      <span class="badge" style="padding:0;border:none;background:transparent;">
+      <span class="badge" style="padding:0; border:none; background:transparent;">
         <img
-          src="assets/ri-universal-warning.png"
+          src="Rhode%20Island%20Universal%20Cannabis%20Symbol.png"
           alt="Rhode Island Universal Cannabis Warning Symbol (Contains THC)"
-          style="height:96px;width:96px;"
-        />
+          style="height:96px; width:96px;" />
       </span>
       <span class="badge">Poison Control: (800) 222-1222</span>
     </div>
@@ -247,7 +252,7 @@
 
       <a class="btn secondary" href="how-it-works.html">How It Works</a>
 
-      <a id="shareBtn" class="btn secondary" href="#" role="button">Share This Product</a>
+      <button id="shareBtn" class="btn secondary" type="button">Share this product</button>
     </div>
   </section>
 
@@ -259,25 +264,22 @@
     <p class="muted">Scanning this QR doesn’t enroll you in anything. You can view info without sharing data. Rewards are optional.</p>
   </section>
 
-  <footer>
-    © <span id="year"></span> Bongos. For adults 21+. Please consume responsibly.
-  </footer>
+  <footer>© <span id="year"></span> Bongos. For adults 21+. Please consume responsibly.</footer>
 </div>
 
 <script>
   const CONFIG = {
     csvUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRANCJ9YvLtG-RUHj8M7n4DMY9OnYCUVqUHV5aekLKwPST7FZ7MCuLBxH_LzvCF2_Wnng9d6CbRQAeV/pub?gid=0&single=true&output=csv',
-    formFallback: 'https://docs.google.com/forms/d/1hkN3ogyKxFmgsB-5kI8EPFX2OJKdFh2iI-fcS_8Cduk/viewform'
+    fallbackForm: 'https://docs.google.com/forms/d/1hkN3ogyKxFmgsB-5kI8EPFX2OJKdFh2iI-fcS_8Cduk/viewform',
+    communityPage: 'community.html'
   };
 
   const $ = (id) => document.getElementById(id);
-  const shareBtn = $('shareBtn');
-if (shareBtn) shareBtn.addEventListener('click', shareProduct);
   const qs = new URLSearchParams(location.search);
   const get = (k, d='') => qs.get(k) || d;
-  const setText = (id, v) => { const el = $(id); if(el && v!=null && v!=='') el.textContent = v; };
-  const setHref = (id, v) => { const el = $(id); if(el && v) el.href = v; };
-  const norm = (v) => String(v || '').trim().toLowerCase();
+  const setText = (id, v) => { const el = $(id); if (el && v!=null && String(v).trim()!=='') el.textContent = v; };
+  const setHref = (id, v) => { const el = $(id); if (el && v) el.href = v; };
+  const norm = (v) => String(v||'').trim().toLowerCase();
 
   function allow(){
     try { localStorage.setItem('bongos21', '1'); } catch(e){}
@@ -289,39 +291,28 @@ if (shareBtn) shareBtn.addEventListener('click', shareProduct);
     if (msg) msg.textContent = 'Sorry, you must be 21+ to view this content.';
   }
   (function(){
-    try{
+    try {
       if (localStorage.getItem('bongos21') === '1') {
         const gate = $('ageGate');
         if (gate) gate.style.display = 'none';
       }
-    }catch(e){}
+    } catch(e){}
   })();
 
-  const gateYes = $('gateYes');
-  const gateNo = $('gateNo');
-  if (gateYes) gateYes.addEventListener('click', allow);
-  if (gateNo) gateNo.addEventListener('click', deny);
-
-  const yearEl = $('year');
-  if (yearEl) yearEl.textContent = new Date().getFullYear();
+  $('year').textContent = new Date().getFullYear();
 
   function parseCSV(text) {
     const rows = [];
     let i = 0, field = '', row = [], inQuotes = false;
-
     function endField() { row.push(field); field = ''; }
     function endRow() { rows.push(row); row = []; }
-
     while (i < text.length) {
       const c = text[i];
-
       if (inQuotes) {
         if (c === '"') {
           if (text[i+1] === '"') { field += '"'; i++; }
           else { inQuotes = false; }
-        } else {
-          field += c;
-        }
+        } else field += c;
       } else {
         if (c === '"') inQuotes = true;
         else if (c === ',') endField();
@@ -341,94 +332,113 @@ if (shareBtn) shareBtn.addEventListener('click', shareProduct);
   }
 
   function findMatch(table, headers, skuWanted, batchWanted){
-    const isku = idxOf(headers,'sku');
-    const ibatch = idxOf(headers,'batch');
+    const iSku = idxOf(headers,'sku');
+    const iBatch = idxOf(headers,'batch');
 
-    if (isku < 0 || ibatch < 0) return table[0] || null;
+    if (iSku < 0 && iBatch < 0) return table[0] || null;
 
     if (skuWanted && batchWanted) {
-      const m = table.find(r => norm(r[isku]) === skuWanted && norm(r[ibatch]) === batchWanted);
+      const m = table.find(r => norm(r[iSku])===skuWanted && norm(r[iBatch])===batchWanted);
       if (m) return m;
     }
     if (skuWanted) {
-      const m = table.find(r => norm(r[isku]) === skuWanted);
+      const m = table.find(r => norm(r[iSku])===skuWanted);
       if (m) return m;
     }
     if (batchWanted) {
-      const m = table.find(r => norm(r[ibatch]) === batchWanted);
+      const m = table.find(r => norm(r[iBatch])===batchWanted);
       if (m) return m;
     }
     if (skuWanted) {
-      const m = table.find(r => norm(r[isku]).startsWith(skuWanted));
+      const m = table.find(r => norm(r[iSku]).startsWith(skuWanted));
       if (m) return m;
     }
     if (batchWanted) {
-      const m = table.find(r => norm(r[ibatch]).startsWith(batchWanted));
+      const m = table.find(r => norm(r[iBatch]).startsWith(batchWanted));
       if (m) return m;
     }
     return table[0] || null;
   }
 
-  function fmt(valStr, unit){
-    const v = String(valStr || '').trim();
-    if (!v) return '';
-    return unit ? (v + ' ' + unit) : v;
+  function isEmpty(val){
+    return val == null || String(val).trim() === '' || String(val).trim() === '—';
   }
 
-  async function shareProduct() {
-    const url = window.location.href;
-    const title = ($('prodName') && $('prodName').textContent) ? $('prodName').textContent : 'Bongos';
+  function showNutritionIfAny(nf){
+    const section = $('nutritionSection');
+    if (!section) return;
 
-    try {
-      if (navigator.share) {
-        await navigator.share({ title, text: 'Check out this Bongos product:', url });
-        return;
-      }
-    } catch (e) {}
+    const any =
+      !isEmpty(nf.servingSize) ||
+      !isEmpty(nf.servingsPerContainer) ||
+      !isEmpty(nf.calories) ||
+      !isEmpty(nf.totalFat) ||
+      !isEmpty(nf.satFat) ||
+      !isEmpty(nf.transFat) ||
+      !isEmpty(nf.chol) ||
+      !isEmpty(nf.sodium) ||
+      !isEmpty(nf.carb) ||
+      !isEmpty(nf.fiber) ||
+      !isEmpty(nf.sugars) ||
+      !isEmpty(nf.addedSugars) ||
+      !isEmpty(nf.protein);
 
-    try {
-      await navigator.clipboard.writeText(url);
-      alert('Link copied!');
-    } catch (e) {
-      prompt('Copy this link:', url);
+    if (!any) {
+      section.style.display = 'none';
+      return;
+    }
+
+    section.style.display = '';
+
+    setText('nfServingSize', nf.servingSize);
+    setText('nfServingsPerContainer', nf.servingsPerContainer);
+    setText('nfCalories', nf.calories);
+    setText('nfTotalFat', nf.totalFat);
+    setText('nfSatFat', nf.satFat);
+    setText('nfTransFat', nf.transFat);
+    setText('nfChol', nf.chol);
+    setText('nfSodium', nf.sodium);
+    setText('nfCarb', nf.carb);
+    setText('nfFiber', nf.fiber);
+    setText('nfSugars', nf.sugars);
+    setText('nfAddedSugars', nf.addedSugars);
+    setText('nfProtein', nf.protein);
+  }
+
+  function shareProduct(){
+    const sku = get('sku','');
+    const batch = get('batch','');
+
+    const u = new URL(CONFIG.communityPage, location.href);
+    u.searchParams.set('ref', 'share');
+    if (sku) u.searchParams.set('sku', sku);
+    if (batch) u.searchParams.set('batch', batch);
+
+    const shareUrl = u.toString();
+    const subject = encodeURIComponent("Join the Bongos Community");
+    const body = encodeURIComponent(
+      "I just tried Bongos and thought you’d like it.\n\n" +
+      "Join the Bongos Community for early access to flavors, drops, and invites:\n" +
+      shareUrl
+    );
+
+    if (navigator.share) {
+      navigator.share({ title: "Join the Bongos Community", text: "Join the Bongos Community", url: shareUrl })
+        .catch(() => { window.location.href = "mailto:?subject=" + subject + "&body=" + body; });
+    } else {
+      window.location.href = "mailto:?subject=" + subject + "&body=" + body;
     }
   }
 
   const shareBtn = $('shareBtn');
   if (shareBtn) shareBtn.addEventListener('click', shareProduct);
-function shareProduct(){
-  const sku = get('sku','');
-  const batch = get('batch','');
 
-  const u = new URL('./community.html', location.href);
-  u.searchParams.set('ref', 'share');
-  if (sku) u.searchParams.set('sku', sku);
-  if (batch) u.searchParams.set('batch', batch);
-
-  const shareUrl = u.toString();
-  const subject = encodeURIComponent("Join the Bongos Community");
-  const body = encodeURIComponent(
-    "I just tried Bongos and thought you’d like it.\n\n" +
-    "Join the Bongos Community for early access to flavors, drops, and invites:\n" +
-    shareUrl
-  );
-
-  if (navigator.share) {
-    navigator.share({ title: "Join the Bongos Community", text: "Join the Bongos Community", url: shareUrl })
-      .catch(()=>{ window.location.href = "mailto:?subject=" + subject + "&body=" + body; });
-  } else {
-    window.location.href = "mailto:?subject=" + subject + "&body=" + body;
-  }
-}
   async function loadData() {
     const skuWanted = norm(get('sku',''));
     const batchWanted = norm(get('batch',''));
     const status = $('status');
-    if (status) {
-      status.style.display = 'block';
-      status.className = 'msg';
-      status.textContent = 'Loading batch details…';
-    }
+    status.style.display = 'block';
+    status.className = 'msg';
 
     try {
       const bust = 't=' + Date.now();
@@ -438,16 +448,14 @@ function shareProduct(){
 
       const text = await res.text();
       const table = parseCSV(text);
-      const headers = (table.shift() || []).map(h => (h||'').trim());
-
-      if (!headers.length) throw new Error('CSV headers missing.');
-
+      const headers = table.shift().map(h => (h||'').trim());
       const match = findMatch(table, headers, skuWanted, batchWanted);
-      if (!match) throw new Error('No matching row.');
+      if (!match) throw new Error('No matching row');
 
+      const idx = (name) => idxOf(headers, name);
       const val = (name) => {
-        const i = idxOf(headers, name);
-        return i >= 0 ? String(match[i] || '').trim() : '';
+        const i = idx(name);
+        return i >= 0 ? String(match[i]||'').trim() : '';
       };
 
       const variant = val('variant');
@@ -458,81 +466,53 @@ function shareProduct(){
       setText('mfgName', val('mfg_name')); setText('mfgLic', val('mfg_lic'));
       setText('retName', val('ret_name')); setText('retLic', val('ret_lic'));
       setText('uid', val('uid')); setText('batch', val('batch')); setText('date', val('date'));
-      setText('thcServing', val('thc_serving')); setText('thcPackage', val('thc_package'));
-      setText('servings', val('servings')); setText('servingSize', val('serving_size'));
 
-      const ing = $('ingredients'); if (ing) ing.textContent = val('ingredients') || '—';
-      const ag  = $('agChems');     if (ag)  ag.textContent  = val('agchem') || '—';
-      const pr  = $('process');     if (pr)  pr.textContent  = val('process') || '—';
-      const rm  = $('remediation'); if (rm)  rm.textContent  = val('remediation') || '—';
+      setText('thcServing', val('thc_serving'));
+      setText('thcPackage', val('thc_package'));
+      setText('servings', val('servings'));
+      setText('servingSize', val('serving_size'));
+
+      $('ingredients').textContent = val('ingredients') || '—';
+      $('agChems').textContent = val('agchem') || '—';
+      $('process').textContent = val('process') || '—';
+      $('remediation').textContent = val('remediation') || '—';
 
       setHref('coaLink', val('coa') || '#');
 
-      const formFromSheet = val('form') || val('Form') || val('Google Form') || val('Rewards Form');
-      const finalForm = (formFromSheet && formFromSheet.trim()) ? formFromSheet.trim() : CONFIG.formFallback;
+      const formFromSheet =
+        val('form') || val('Form') || val('google_form') || val('rewards_form') || val('Rewards Form');
+
+      const finalForm = (formFromSheet && formFromSheet.trim()) ? formFromSheet.trim() : CONFIG.fallbackForm;
       setHref('rewardsBtn', finalForm);
 
-      const t = (val('type') || 'infused').toLowerCase();
-      const smokeWarn = $('smokeWarn');
-      const topWarn = $('topWarn');
-      const delayWarn = $('delayWarn');
-      if (smokeWarn) smokeWarn.style.display = (t==='smokable'||t==='vapable') ? '' : 'none';
-      if (topWarn) topWarn.style.display = (t==='topical') ? '' : 'none';
-      if (delayWarn) delayWarn.style.display = (t==='infused') ? '' : '';
-
-      /* --- Nutrition mapping + auto-hide --- */
+      // Nutrition fields (add these columns to your CSV when ready)
       const nf = {
-        servingSize: val('nf_serving_size'),
-        servingsPer: val('nf_servings_per_container'),
-        calories: val('nf_calories'),
-        totalFat: fmt(val('nf_total_fat_g'), 'g'),
-        satFat: fmt(val('nf_sat_fat_g'), 'g'),
-        transFat: fmt(val('nf_trans_fat_g'), 'g'),
-        chol: fmt(val('nf_chol_mg'), 'mg'),
-        sodium: fmt(val('nf_sodium_mg'), 'mg'),
-        carb: fmt(val('nf_total_carb_g'), 'g'),
-        fiber: fmt(val('nf_fiber_g'), 'g'),
-        sugars: fmt(val('nf_total_sugars_g'), 'g'),
-        addedSugars: fmt(val('nf_added_sugars_g'), 'g'),
-        protein: fmt(val('nf_protein_g'), 'g')
+        servingSize: val('nf_serving_size') || val('nutrition_serving_size'),
+        servingsPerContainer: val('nf_servings_per_container') || val('nutrition_servings_per_container'),
+        calories: val('nf_calories') || val('nutrition_calories'),
+        totalFat: val('nf_total_fat') || val('nutrition_total_fat'),
+        satFat: val('nf_saturated_fat') || val('nutrition_saturated_fat'),
+        transFat: val('nf_trans_fat') || val('nutrition_trans_fat'),
+        chol: val('nf_cholesterol') || val('nutrition_cholesterol'),
+        sodium: val('nf_sodium') || val('nutrition_sodium'),
+        carb: val('nf_total_carbs') || val('nutrition_total_carbs'),
+        fiber: val('nf_fiber') || val('nutrition_fiber'),
+        sugars: val('nf_total_sugars') || val('nutrition_total_sugars'),
+        addedSugars: val('nf_added_sugars') || val('nutrition_added_sugars'),
+        protein: val('nf_protein') || val('nutrition_protein')
       };
+      showNutritionIfAny(nf);
 
-      const hasAnyNF =
-        nf.servingSize || nf.servingsPer || nf.calories || nf.totalFat || nf.satFat || nf.transFat ||
-        nf.chol || nf.sodium || nf.carb || nf.fiber || nf.sugars || nf.addedSugars || nf.protein;
+      const t = (val('type')||'infused').toLowerCase();
+      $('smokeWarn').style.display = (t==='smokable'||t==='vapable') ? '' : 'none';
+      $('topWarn').style.display = (t==='topical') ? '' : 'none';
 
-      const nutritionSection = $('nutritionSection');
-      if (nutritionSection) nutritionSection.style.display = hasAnyNF ? '' : 'none';
-
-      if (hasAnyNF) {
-        setText('nfServingSize', nf.servingSize || '—');
-        setText('nfServingsPerContainer', nf.servingsPer || '—');
-        setText('nfCalories', nf.calories || '—');
-        setText('nfTotalFat', nf.totalFat || '—');
-        setText('nfSatFat', nf.satFat || '—');
-        setText('nfTransFat', nf.transFat || '—');
-        setText('nfChol', nf.chol || '—');
-        setText('nfSodium', nf.sodium || '—');
-        setText('nfCarb', nf.carb || '—');
-        setText('nfFiber', nf.fiber || '—');
-        setText('nfSugars', nf.sugars || '—');
-        setText('nfAddedSugars', nf.addedSugars || '—');
-        setText('nfProtein', nf.protein || '—');
-      }
-
-      if (status) {
-        status.textContent = 'Loaded from sheet.';
-        status.className = 'msg ok';
-        status.style.display = 'block';
-      }
+      status.textContent = 'Loaded from sheet.';
+      status.className = 'msg ok';
     } catch (e) {
       console.error(e);
-      const status = $('status');
-      if (status) {
-        status.textContent = "Couldn't load from sheet. Please try again in a moment.";
-        status.className = 'msg err';
-        status.style.display = 'block';
-      }
+      status.textContent = 'Couldn’t load from sheet.';
+      status.className = 'msg err';
     }
   }
 
