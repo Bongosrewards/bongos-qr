@@ -270,7 +270,8 @@
     formFallback: 'https://docs.google.com/forms/d/1hkN3ogyKxFmgsB-5kI8EPFX2OJKdFh2iI-fcS_8Cduk/viewform'
   };
 
-  const $ = (id) => document.getElementById(id);const shareBtn = $('shareBtn');
+  const $ = (id) => document.getElementById(id);
+  const shareBtn = $('shareBtn');
 if (shareBtn) shareBtn.addEventListener('click', shareProduct);
   const qs = new URLSearchParams(location.search);
   const get = (k, d='') => qs.get(k) || d;
