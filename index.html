@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Bongos — Product Info & Rewards</title>
+
   <style>
     :root{
       --brand:#0f9d58;
@@ -36,29 +37,31 @@
     .msg{background:#fff8e1;border:1px solid #ffe08a;padding:12px;border-radius:10px;margin-top:8px;display:none}
     .err{background:#fdecea;border:1px solid #f5c2c7;color:#842029}
     .ok{background:#e8f5ee;border:1px solid #cfe9dd}
-<style>
-.nf-wrap{background:#fff;border:2px solid #000;border-radius:12px;padding:14px;max-width:520px}
-.nf-title{font-weight:900;font-size:28px;line-height:1;margin:0 0 10px}
-.nf-sub{font-size:13px;margin:0 0 8px}
-.nf-rule-thick{border-top:8px solid #000;margin:8px 0}
-.nf-rule{border-top:1px solid #000;margin:6px 0}
-.nf-row{display:flex;justify-content:space-between;gap:10px;font-size:14px}
-.nf-row strong{font-weight:800}
-.nf-indent{padding-left:16px;font-size:13px}
-.nf-right{white-space:nowrap}
-details.nf-details{background:#fff;border:1px solid #e6e8eb;border-radius:12px;padding:12px}
-details.nf-details summary{cursor:pointer;font-weight:800}
+
+    /* --- Nutrition Facts (FDA-style) --- */
+    .nf-wrap{background:#fff;border:2px solid #000;border-radius:12px;padding:14px;max-width:520px}
+    .nf-title{font-weight:900;font-size:28px;line-height:1;margin:0 0 10px}
+    .nf-sub{font-size:13px;margin:0 0 8px}
+    .nf-rule-thick{border-top:8px solid #000;margin:8px 0}
+    .nf-rule{border-top:1px solid #000;margin:6px 0}
+    .nf-row{display:flex;justify-content:space-between;gap:10px;font-size:14px}
+    .nf-row strong{font-weight:800}
+    .nf-indent{padding-left:16px;font-size:13px}
+    .nf-right{white-space:nowrap}
+    details.nf-details{background:#fff;border:1px solid #e6e8eb;border-radius:12px;padding:12px}
+    details.nf-details summary{cursor:pointer;font-weight:800}
   </style>
 </head>
+
 <body>
 
 <div id="ageGate" class="gate" role="dialog" aria-modal="true" aria-labelledby="gateTitle">
   <div class="panel">
-   <img src="https://raw.githubusercontent.com/Bongosrewards/bongos-rewards/main/Bongos%20Logo%20Final.png" alt="Bongos" style="height:90px;" />
+    <img src="https://raw.githubusercontent.com/Bongosrewards/bongos-rewards/main/Bongos%20Logo%20Final.png" alt="Bongos" style="height:90px;" />
     <h1 id="gateTitle">Are you 21 or older?</h1>
     <div class="row" style="justify-content:center;margin-top:10px">
-      <button class="btn" onclick="allow()">Yes, enter</button>
-      <button class="btn secondary" onclick="deny()">No</button>
+      <button class="btn" id="gateYes" type="button">Yes, enter</button>
+      <button class="btn secondary" id="gateNo" type="button">No</button>
     </div>
     <p id="gateMsg" class="muted" style="margin-top:12px"></p>
   </div>
@@ -75,6 +78,7 @@ details.nf-details summary{cursor:pointer;font-weight:800}
 
   <section class="card" id="productCore">
     <h1 id="prodName">Bongos Mixtails — <span id="variant">Loading…</span></h1>
+
     <div class="grid">
       <div>
         <h3>Core Details</h3>
@@ -86,6 +90,7 @@ details.nf-details summary{cursor:pointer;font-weight:800}
           <div><strong>Harvest / Mfg Date:</strong> <span id="date">—</span></div>
         </div>
       </div>
+
       <div>
         <h3>Cannabinoid Profile</h3>
         <div class="grid">
@@ -103,15 +108,18 @@ details.nf-details summary{cursor:pointer;font-weight:800}
         </div>
       </div>
     </div>
+
     <div class="row" style="margin-top:10px">
-      <span class="badge" style="padding:0; border:none; background:transparent;">
-        <img 
-  src="assets/ri-universal-warning.png" 
-  alt="Rhode Island Universal Cannabis Warning Symbol (Contains THC)" 
-  style="height:96px; width:96px;" />
+      <span class="badge" style="padding:0;border:none;background:transparent;">
+        <img
+          src="assets/ri-universal-warning.png"
+          alt="Rhode Island Universal Cannabis Warning Symbol (Contains THC)"
+          style="height:96px;width:96px;"
+        />
       </span>
       <span class="badge">Poison Control: (800) 222-1222</span>
     </div>
+
     <div id="status" class="msg">Loading batch details…</div>
   </section>
 
@@ -153,91 +161,93 @@ details.nf-details summary{cursor:pointer;font-weight:800}
       <div class="muted">View third-party lab results: <a id="coaLink" href="#" target="_blank" rel="noopener">Open COA</a></div>
     </details>
   </section>
-<section class="card" id="nutritionSection" style="display:none">
-  <details class="nf-details" id="nutritionDetails">
-    <summary>Nutrition Facts</summary>
 
-    <div class="nf-wrap" style="margin-top:12px">
-      <div class="nf-title">Nutrition Facts</div>
+  <section class="card" id="nutritionSection" style="display:none">
+    <details class="nf-details" id="nutritionDetails">
+      <summary>Nutrition Facts</summary>
 
-      <p class="nf-sub"><strong>Serving size</strong> <span id="nfServingSize">—</span></p>
-      <p class="nf-sub"><strong>Servings per container</strong> <span id="nfServingsPerContainer">—</span></p>
+      <div class="nf-wrap" style="margin-top:12px">
+        <div class="nf-title">Nutrition Facts</div>
 
-      <div class="nf-rule-thick"></div>
+        <p class="nf-sub"><strong>Serving size</strong> <span id="nfServingSize">—</span></p>
+        <p class="nf-sub"><strong>Servings per container</strong> <span id="nfServingsPerContainer">—</span></p>
 
-      <div class="nf-row" style="font-size:18px">
-        <strong>Calories</strong>
-        <span class="nf-right" id="nfCalories">—</span>
+        <div class="nf-rule-thick"></div>
+
+        <div class="nf-row" style="font-size:18px">
+          <strong>Calories</strong>
+          <span class="nf-right" id="nfCalories">—</span>
+        </div>
+
+        <div class="nf-rule"></div>
+
+        <div class="nf-row">
+          <strong>Total Fat</strong>
+          <span class="nf-right" id="nfTotalFat">—</span>
+        </div>
+        <div class="nf-row nf-indent">
+          <span>Saturated Fat</span>
+          <span class="nf-right" id="nfSatFat">—</span>
+        </div>
+        <div class="nf-row nf-indent">
+          <span>Trans Fat</span>
+          <span class="nf-right" id="nfTransFat">—</span>
+        </div>
+
+        <div class="nf-rule"></div>
+
+        <div class="nf-row">
+          <strong>Cholesterol</strong>
+          <span class="nf-right" id="nfChol">—</span>
+        </div>
+
+        <div class="nf-rule"></div>
+
+        <div class="nf-row">
+          <strong>Sodium</strong>
+          <span class="nf-right" id="nfSodium">—</span>
+        </div>
+
+        <div class="nf-rule"></div>
+
+        <div class="nf-row">
+          <strong>Total Carbohydrate</strong>
+          <span class="nf-right" id="nfCarb">—</span>
+        </div>
+        <div class="nf-row nf-indent">
+          <span>Dietary Fiber</span>
+          <span class="nf-right" id="nfFiber">—</span>
+        </div>
+        <div class="nf-row nf-indent">
+          <span>Total Sugars</span>
+          <span class="nf-right" id="nfSugars">—</span>
+        </div>
+        <div class="nf-row nf-indent">
+          <span>Includes Added Sugars</span>
+          <span class="nf-right" id="nfAddedSugars">—</span>
+        </div>
+
+        <div class="nf-rule"></div>
+
+        <div class="nf-row">
+          <strong>Protein</strong>
+          <span class="nf-right" id="nfProtein">—</span>
+        </div>
       </div>
+    </details>
+  </section>
 
-      <div class="nf-rule"></div>
-
-      <div class="nf-row">
-        <strong>Total Fat</strong>
-        <span class="nf-right"><span id="nfTotalFat">—</span></span>
-      </div>
-      <div class="nf-row nf-indent">
-        <span>Saturated Fat</span>
-        <span class="nf-right" id="nfSatFat">—</span>
-      </div>
-      <div class="nf-row nf-indent">
-        <span>Trans Fat</span>
-        <span class="nf-right" id="nfTransFat">—</span>
-      </div>
-
-      <div class="nf-rule"></div>
-
-      <div class="nf-row">
-        <strong>Cholesterol</strong>
-        <span class="nf-right" id="nfChol">—</span>
-      </div>
-
-      <div class="nf-rule"></div>
-
-      <div class="nf-row">
-        <strong>Sodium</strong>
-        <span class="nf-right" id="nfSodium">—</span>
-      </div>
-
-      <div class="nf-rule"></div>
-
-      <div class="nf-row">
-        <strong>Total Carbohydrate</strong>
-        <span class="nf-right" id="nfCarb">—</span>
-      </div>
-      <div class="nf-row nf-indent">
-        <span>Dietary Fiber</span>
-        <span class="nf-right" id="nfFiber">—</span>
-      </div>
-      <div class="nf-row nf-indent">
-        <span>Total Sugars</span>
-        <span class="nf-right" id="nfSugars">—</span>
-      </div>
-      <div class="nf-row nf-indent">
-        <span>Includes Added Sugars</span>
-        <span class="nf-right" id="nfAddedSugars">—</span>
-      </div>
-
-      <div class="nf-rule"></div>
-
-      <div class="nf-row">
-        <strong>Protein</strong>
-        <span class="nf-right" id="nfProtein">—</span>
-      </div>
-    </div>
-  </details>
-</section>
   <section class="card">
     <h2>Earn Points with Bongos Rewards</h2>
     <p class="muted">Earn points toward rewards and event invites.</p>
     <div class="cta">
       <a id="rewardsBtn" class="btn"
          href="https://docs.google.com/forms/d/1hkN3ogyKxFmgsB-5kI8EPFX2OJKdFh2iI-fcS_8Cduk/viewform"
-         target="_blank" rel="noopener">
-        Earn Points
-      </a>
+         target="_blank" rel="noopener">Earn Points</a>
+
       <a class="btn secondary" href="how-it-works.html">How It Works</a>
-   <button id="shareBtn" class="btn secondary" type="button">Share this product</button>
+
+      <button id="shareBtn" class="btn secondary" type="button">Share this product</button>
     </div>
   </section>
 
@@ -256,7 +266,8 @@ details.nf-details summary{cursor:pointer;font-weight:800}
 
 <script>
   const CONFIG = {
-    csvUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRANCJ9YvLtG-RUHj8M7n4DMY9OnYCUVqUHV5aekLKwPST7FZ7MCuLBxH_LzvCF2_Wnng9d6CbRQAeV/pub?gid=0&single=true&output=csv'
+    csvUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRANCJ9YvLtG-RUHj8M7n4DMY9OnYCUVqUHV5aekLKwPST7FZ7MCuLBxH_LzvCF2_Wnng9d6CbRQAeV/pub?gid=0&single=true&output=csv',
+    formFallback: 'https://docs.google.com/forms/d/1hkN3ogyKxFmgsB-5kI8EPFX2OJKdFh2iI-fcS_8Cduk/viewform'
   };
 
   const $ = (id) => document.getElementById(id);
@@ -264,32 +275,55 @@ details.nf-details summary{cursor:pointer;font-weight:800}
   const get = (k, d='') => qs.get(k) || d;
   const setText = (id, v) => { const el = $(id); if(el && v!=null && v!=='') el.textContent = v; };
   const setHref = (id, v) => { const el = $(id); if(el && v) el.href = v; };
+  const norm = (v) => String(v || '').trim().toLowerCase();
 
   function allow(){
     try { localStorage.setItem('bongos21', '1'); } catch(e){}
-    $('ageGate').style.display='none';
+    const gate = $('ageGate');
+    if (gate) gate.style.display = 'none';
   }
-  function deny(){ $('gateMsg').textContent='Sorry, you must be 21+ to view this content.'; }
-  (function(){ try{ if(localStorage.getItem('bongos21')==='1'){ const g=$('ageGate'); if(g) g.style.display='none'; } }catch(e){} })();
+  function deny(){
+    const msg = $('gateMsg');
+    if (msg) msg.textContent = 'Sorry, you must be 21+ to view this content.';
+  }
+  (function(){
+    try{
+      if (localStorage.getItem('bongos21') === '1') {
+        const gate = $('ageGate');
+        if (gate) gate.style.display = 'none';
+      }
+    }catch(e){}
+  })();
 
-  $('year').textContent = new Date().getFullYear();
+  const gateYes = $('gateYes');
+  const gateNo = $('gateNo');
+  if (gateYes) gateYes.addEventListener('click', allow);
+  if (gateNo) gateNo.addEventListener('click', deny);
+
+  const yearEl = $('year');
+  if (yearEl) yearEl.textContent = new Date().getFullYear();
 
   function parseCSV(text) {
     const rows = [];
     let i = 0, field = '', row = [], inQuotes = false;
+
     function endField() { row.push(field); field = ''; }
     function endRow() { rows.push(row); row = []; }
+
     while (i < text.length) {
       const c = text[i];
+
       if (inQuotes) {
         if (c === '"') {
           if (text[i+1] === '"') { field += '"'; i++; }
           else { inQuotes = false; }
-        } else { field += c; }
+        } else {
+          field += c;
+        }
       } else {
         if (c === '"') inQuotes = true;
         else if (c === ',') endField();
-        else if (c === '\r') { }
+        else if (c === '\r') {}
         else if (c === '\n') { endField(); endRow(); }
         else field += c;
       }
@@ -300,22 +334,26 @@ details.nf-details summary{cursor:pointer;font-weight:800}
   }
 
   function idxOf(headers, name){
-    return headers.findIndex(h => (h||'').toLowerCase().trim() === name.toLowerCase().trim());
+    const target = name.toLowerCase().trim();
+    return headers.findIndex(h => (h||'').toLowerCase().trim() === target);
   }
-  function norm(v){ return String(v||'').trim().toLowerCase(); }
+
   function findMatch(table, headers, skuWanted, batchWanted){
     const isku = idxOf(headers,'sku');
     const ibatch = idxOf(headers,'batch');
+
+    if (isku < 0 || ibatch < 0) return table[0] || null;
+
     if (skuWanted && batchWanted) {
-      const m = table.find(r => norm(r[isku])===skuWanted && norm(r[ibatch])===batchWanted);
+      const m = table.find(r => norm(r[isku]) === skuWanted && norm(r[ibatch]) === batchWanted);
       if (m) return m;
     }
     if (skuWanted) {
-      const m = table.find(r => norm(r[isku])===skuWanted);
+      const m = table.find(r => norm(r[isku]) === skuWanted);
       if (m) return m;
     }
     if (batchWanted) {
-      const m = table.find(r => norm(r[ibatch])===batchWanted);
+      const m = table.find(r => norm(r[ibatch]) === batchWanted);
       if (m) return m;
     }
     if (skuWanted) {
@@ -329,27 +367,63 @@ details.nf-details summary{cursor:pointer;font-weight:800}
     return table[0] || null;
   }
 
+  function fmt(valStr, unit){
+    const v = String(valStr || '').trim();
+    if (!v) return '';
+    return unit ? (v + ' ' + unit) : v;
+  }
+
+  async function shareProduct() {
+    const url = window.location.href;
+    const title = ($('prodName') && $('prodName').textContent) ? $('prodName').textContent : 'Bongos';
+
+    try {
+      if (navigator.share) {
+        await navigator.share({ title, text: 'Check out this Bongos product:', url });
+        return;
+      }
+    } catch (e) {}
+
+    try {
+      await navigator.clipboard.writeText(url);
+      alert('Link copied!');
+    } catch (e) {
+      prompt('Copy this link:', url);
+    }
+  }
+
+  const shareBtn = $('shareBtn');
+  if (shareBtn) shareBtn.addEventListener('click', shareProduct);
+
   async function loadData() {
     const skuWanted = norm(get('sku',''));
     const batchWanted = norm(get('batch',''));
     const status = $('status');
-    status.style.display = 'block';
-    status.className = 'msg';
+    if (status) {
+      status.style.display = 'block';
+      status.className = 'msg';
+      status.textContent = 'Loading batch details…';
+    }
 
     try {
       const bust = 't=' + Date.now();
-const url  = CONFIG.csvUrl + (CONFIG.csvUrl.includes('?') ? '&' : '?') + bust;
-const res  = await fetch(url, { cache: 'no-store' });
+      const url  = CONFIG.csvUrl + (CONFIG.csvUrl.includes('?') ? '&' : '?') + bust;
+      const res  = await fetch(url, { cache: 'no-store' });
       if (!res.ok) throw new Error('HTTP ' + res.status);
+
       const text = await res.text();
       const table = parseCSV(text);
-      const headers = table.shift().map(h => (h||'').trim());
+      const headers = (table.shift() || []).map(h => (h||'').trim());
+
+      if (!headers.length) throw new Error('CSV headers missing.');
 
       const match = findMatch(table, headers, skuWanted, batchWanted);
-      if (!match) throw new Error('No matching row. Pass ?sku=...&batch=... or check your sheet.');
+      if (!match) throw new Error('No matching row.');
 
-      const idx = (name) => headers.findIndex(h => h.toLowerCase()===name.toLowerCase());
-      const val = (name) => { const i = idx(name); return i>=0 ? (match[i]||'').trim() : ''; };
+      const val = (name) => {
+        const i = idxOf(headers, name);
+        return i >= 0 ? String(match[i] || '').trim() : '';
+      };
 
       const variant = val('variant');
       setText('variant', variant || '—');
@@ -361,29 +435,79 @@ const res  = await fetch(url, { cache: 'no-store' });
       setText('uid', val('uid')); setText('batch', val('batch')); setText('date', val('date'));
       setText('thcServing', val('thc_serving')); setText('thcPackage', val('thc_package'));
       setText('servings', val('servings')); setText('servingSize', val('serving_size'));
-      $('ingredients').textContent = val('ingredients');
-      $('agChems').textContent = val('agchem');
-      $('process').textContent = val('process');
-      $('remediation').textContent = val('remediation');
 
-      setHref('coaLink', val('coa'));
+      const ing = $('ingredients'); if (ing) ing.textContent = val('ingredients') || '—';
+      const ag  = $('agChems');     if (ag)  ag.textContent  = val('agchem') || '—';
+      const pr  = $('process');     if (pr)  pr.textContent  = val('process') || '—';
+      const rm  = $('remediation'); if (rm)  rm.textContent  = val('remediation') || '—';
+
+      setHref('coaLink', val('coa') || '#');
 
       const formFromSheet = val('form') || val('Form') || val('Google Form') || val('Rewards Form');
-      const formFallback = 'https://docs.google.com/forms/d/1hkN3ogyKxFmgsB-5kI8EPFX2OJKdFh2iI-fcS_8Cduk/viewform';
-      const finalForm = (formFromSheet && formFromSheet.trim()) ? formFromSheet.trim() : formFallback;
+      const finalForm = (formFromSheet && formFromSheet.trim()) ? formFromSheet.trim() : CONFIG.formFallback;
       setHref('rewardsBtn', finalForm);
 
-      const t = (val('type')||'infused').toLowerCase();
-      $('smokeWarn').style.display = (t==='smokable'||t==='vapable') ? '' : 'none';
-      $('topWarn').style.display = (t==='topical') ? '' : 'none';
-      $('delayWarn').style.display = (t==='infused') ? '' : '';
+      const t = (val('type') || 'infused').toLowerCase();
+      const smokeWarn = $('smokeWarn');
+      const topWarn = $('topWarn');
+      const delayWarn = $('delayWarn');
+      if (smokeWarn) smokeWarn.style.display = (t==='smokable'||t==='vapable') ? '' : 'none';
+      if (topWarn) topWarn.style.display = (t==='topical') ? '' : 'none';
+      if (delayWarn) delayWarn.style.display = (t==='infused') ? '' : '';
 
-      status.textContent = 'Loaded from sheet.';
-      status.className = 'msg ok';
+      /* --- Nutrition mapping + auto-hide --- */
+      const nf = {
+        servingSize: val('nf_serving_size'),
+        servingsPer: val('nf_servings_per_container'),
+        calories: val('nf_calories'),
+        totalFat: fmt(val('nf_total_fat_g'), 'g'),
+        satFat: fmt(val('nf_sat_fat_g'), 'g'),
+        transFat: fmt(val('nf_trans_fat_g'), 'g'),
+        chol: fmt(val('nf_chol_mg'), 'mg'),
+        sodium: fmt(val('nf_sodium_mg'), 'mg'),
+        carb: fmt(val('nf_total_carb_g'), 'g'),
+        fiber: fmt(val('nf_fiber_g'), 'g'),
+        sugars: fmt(val('nf_total_sugars_g'), 'g'),
+        addedSugars: fmt(val('nf_added_sugars_g'), 'g'),
+        protein: fmt(val('nf_protein_g'), 'g')
+      };
+
+      const hasAnyNF =
+        nf.servingSize || nf.servingsPer || nf.calories || nf.totalFat || nf.satFat || nf.transFat ||
+        nf.chol || nf.sodium || nf.carb || nf.fiber || nf.sugars || nf.addedSugars || nf.protein;
+
+      const nutritionSection = $('nutritionSection');
+      if (nutritionSection) nutritionSection.style.display = hasAnyNF ? '' : 'none';
+
+      if (hasAnyNF) {
+        setText('nfServingSize', nf.servingSize || '—');
+        setText('nfServingsPerContainer', nf.servingsPer || '—');
+        setText('nfCalories', nf.calories || '—');
+        setText('nfTotalFat', nf.totalFat || '—');
+        setText('nfSatFat', nf.satFat || '—');
+        setText('nfTransFat', nf.transFat || '—');
+        setText('nfChol', nf.chol || '—');
+        setText('nfSodium', nf.sodium || '—');
+        setText('nfCarb', nf.carb || '—');
+        setText('nfFiber', nf.fiber || '—');
+        setText('nfSugars', nf.sugars || '—');
+        setText('nfAddedSugars', nf.addedSugars || '—');
+        setText('nfProtein', nf.protein || '—');
+      }
+
+      if (status) {
+        status.textContent = 'Loaded from sheet.';
+        status.className = 'msg ok';
+        status.style.display = 'block';
+      }
     } catch (e) {
       console.error(e);
-      status.textContent = 'Couldn\'t load from sheet. If you\'re viewing this file locally, host it on GitHub Pages/Netlify to allow CSV requests.';
-      status.className = 'msg err';
+      const status = $('status');
+      if (status) {
+        status.textContent = "Couldn't load from sheet. Please try again in a moment.";
+        status.className = 'msg err';
+        status.style.display = 'block';
+      }
     }
   }
 
@@ -392,5 +516,3 @@ const res  = await fetch(url, { cache: 'no-store' });
 
 </body>
 </html>
-
-
