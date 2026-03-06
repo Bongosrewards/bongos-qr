@@ -405,31 +405,35 @@
     setText('nfProtein', nf.protein);
   }
 
-  function shareProduct(){
-    const sku = get('sku','');
-    const batch = get('batch','');
+ function shareProduct(){
+  const sku = get('sku','');
+  const batch = get('batch','');
 
-    const u = new URL(CONFIG.communityPage, location.href);
-    u.searchParams.set('ref', 'share');
-    if (sku) u.searchParams.set('sku', sku);
-    if (batch) u.searchParams.set('batch', batch);
+  const u = new URL('community.html', location.href);
+  u.searchParams.set('ref', 'share');
+  if (sku) u.searchParams.set('sku', sku);
+  if (batch) u.searchParams.set('batch', batch);
 
-    const shareUrl = u.toString();
-    const subject = encodeURIComponent("Join the Bongos Community");
-    const body = encodeURIComponent(
-      "I just tried Bongos and thought you’d like it.\n\n" +
-      "Join the Bongos Community for early access to flavors, drops, and invites:\n" +
-      shareUrl
-    );
+  const shareUrl = u.toString();
+  const subject = encodeURIComponent("Join the Bongos Community");
+  const body = encodeURIComponent(
+    "I thought you’d like Bongos.\n\n" +
+    "Join the Bongos Community for early access to flavors, drops, and invites:\n" +
+    shareUrl
+  );
 
-    if (navigator.share) {
-      navigator.share({ title: "Join the Bongos Community", text: "Join the Bongos Community", url: shareUrl })
-        .catch(() => { window.location.href = "mailto:?subject=" + subject + "&body=" + body; });
-    } else {
+  if (navigator.share) {
+    navigator.share({
+      title: "Join the Bongos Community",
+      text: "Join the Bongos Community",
+      url: shareUrl
+    }).catch(() => {
       window.location.href = "mailto:?subject=" + subject + "&body=" + body;
-    }
+    });
+  } else {
+    window.location.href = "mailto:?subject=" + subject + "&body=" + body;
   }
-
+}
   const shareBtn = $('shareBtn');
   if (shareBtn) shareBtn.addEventListener('click', shareProduct);
 
