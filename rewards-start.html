@@ -77,6 +77,15 @@
       cursor:pointer;
       font:inherit;
     }
+    .msg{
+      background:#fdecea;
+      border:1px solid #f5c2c7;
+      color:#842029;
+      padding:12px;
+      border-radius:10px;
+      margin-top:12px;
+      display:none;
+    }
   </style>
 </head>
 <body>
@@ -101,6 +110,7 @@
       </div>
 
       <button class="btn" type="submit">Continue to Rewards Form</button>
+      <div id="errorBox" class="msg"></div>
     </form>
   </div>
 </div>
@@ -122,20 +132,42 @@
   document.getElementById("rewardsStartForm").addEventListener("submit", function(e){
     e.preventDefault();
 
+    const errorBox = document.getElementById("errorBox");
+    errorBox.style.display = "none";
+    errorBox.textContent = "";
+
     const name = document.getElementById("fullName").value.trim();
     const email = document.getElementById("emailAddress").value.trim();
 
-    localStorage.setItem("bongosCustomer", JSON.stringify({
-      name: name,
-      email: email
-    }));
+    if (!name || !email) {
+      errorBox.textContent = "Please enter your name and email.";
+      errorBox.style.display = "block";
+      return;
+    }
 
-    const url =
-      FORM_URL +
-      "?" + NAME_ENTRY + "=" + encodeURIComponent(name) +
-      "&" + EMAIL_ENTRY + "=" + encodeURIComponent(email);
+    try {
+      localStorage.setItem("bongosCustomer", JSON.stringify({
+        name: name,
+        email: email
+      }));
 
-    window.location.href = url;
+      const formUrl = new URL(FORM_URL);
+      formUrl.searchParams.set("usp", "pp_url");
+      formUrl.searchParams.set(NAME_ENTRY, name);
+      formUrl.searchParams.set(EMAIL_ENTRY, email);
+
+      const qs = new URLSearchParams(window.location.search);
+      const sku = qs.get("sku");
+      const batch = qs.get("batch");
+
+      if (sku) localStorage.setItem("bongosLastSku", sku);
+      if (batch) localStorage.setItem("bongosLastBatch", batch);
+
+      window.location.href = formUrl.toString();
+    } catch (err) {
+      errorBox.textContent = "Something went wrong. Please try again.";
+      errorBox.style.display = "block";
+    }
   });
 </script>
 </body>
