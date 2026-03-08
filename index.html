@@ -41,7 +41,6 @@
     details{background:#fff;border:1px solid #e6e8eb;border-radius:12px;padding:12px}
     details summary{cursor:pointer;font-weight:800}
 
-    /* Nutrition Facts look */
     .nf-wrap{background:#fff;border:2px solid #000;border-radius:12px;padding:14px;max-width:520px}
     .nf-title{font-weight:900;font-size:28px;line-height:1;margin:0 0 10px}
     .nf-sub{font-size:13px;margin:0 0 8px}
@@ -54,7 +53,6 @@
     details.nf-details{background:#fff;border:1px solid #e6e8eb;border-radius:12px;padding:12px}
     details.nf-details summary{cursor:pointer;font-weight:800}
 
-    /* Make button element match anchors */
     button.btn{font:inherit;line-height:inherit;-webkit-appearance:none;appearance:none}
   </style>
 </head>
@@ -247,9 +245,7 @@
     <p class="muted">Earn points toward rewards and event invites.</p>
     <div class="cta">
       <a id="rewardsBtn" class="btn" href="rewards-start.html">Earn Points</a>
-         
       <a class="btn secondary" href="how-it-works.html">How It Works</a>
-
       <button id="shareBtn" class="btn secondary" type="button">Share this product</button>
     </div>
   </section>
@@ -268,7 +264,6 @@
 <script>
   const CONFIG = {
     csvUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRANCJ9YvLtG-RUHj8M7n4DMY9OnYCUVqUHV5aekLKwPST7FZ7MCuLBxH_LzvCF2_Wnng9d6CbRQAeV/pub?gid=0&single=true&output=csv',
-    fallbackForm: 'https://docs.google.com/forms/d/1hkN3ogyKxFmgsB-5kI8EPFX2OJKdFh2iI-fcS_8Cduk/viewform',
     communityPage: 'community.html'
   };
 
@@ -284,10 +279,12 @@
     const gate = $('ageGate');
     if (gate) gate.style.display = 'none';
   }
+
   function deny(){
     const msg = $('gateMsg');
     if (msg) msg.textContent = 'Sorry, you must be 21+ to view this content.';
   }
+
   (function(){
     try {
       if (localStorage.getItem('bongos21') === '1') {
@@ -310,7 +307,9 @@
         if (c === '"') {
           if (text[i+1] === '"') { field += '"'; i++; }
           else { inQuotes = false; }
-        } else field += c;
+        } else {
+          field += c;
+        }
       } else {
         if (c === '"') inQuotes = true;
         else if (c === ',') endField();
@@ -403,35 +402,36 @@
     setText('nfProtein', nf.protein);
   }
 
- function shareProduct(){
-  const sku = get('sku','');
-  const batch = get('batch','');
+  function shareProduct(){
+    const sku = get('sku','');
+    const batch = get('batch','');
 
-  const u = new URL('community.html', location.href);
-  u.searchParams.set('ref', 'share');
-  if (sku) u.searchParams.set('sku', sku);
-  if (batch) u.searchParams.set('batch', batch);
+    const u = new URL('community.html', location.href);
+    u.searchParams.set('ref', 'share');
+    if (sku) u.searchParams.set('sku', sku);
+    if (batch) u.searchParams.set('batch', batch);
 
-  const shareUrl = u.toString();
-  const subject = encodeURIComponent("Join the Bongos Community");
-  const body = encodeURIComponent(
-    "I thought you’d like Bongos.\n\n" +
-    "Join the Bongos Community for early access to flavors, drops, and invites:\n" +
-    shareUrl
-  );
+    const shareUrl = u.toString();
+    const subject = encodeURIComponent("Join the Bongos Community");
+    const body = encodeURIComponent(
+      "I thought you’d like Bongos.\n\n" +
+      "Join the Bongos Community for early access to flavors, drops, and invites:\n" +
+      shareUrl
+    );
 
-  if (navigator.share) {
-    navigator.share({
-      title: "Join the Bongos Community",
-      text: "Join the Bongos Community",
-      url: shareUrl
-    }).catch(() => {
+    if (navigator.share) {
+      navigator.share({
+        title: "Join the Bongos Community",
+        text: "Join the Bongos Community",
+        url: shareUrl
+      }).catch(() => {
+        window.location.href = "mailto:?subject=" + subject + "&body=" + body;
+      });
+    } else {
       window.location.href = "mailto:?subject=" + subject + "&body=" + body;
-    });
-  } else {
-    window.location.href = "mailto:?subject=" + subject + "&body=" + body;
+    }
   }
-}
+
   const shareBtn = $('shareBtn');
   if (shareBtn) shareBtn.addEventListener('click', shareProduct);
 
@@ -465,10 +465,13 @@
       setText('prodName', 'Bongos Mixtails — ' + (variant || '—'));
       setText('skuLine', 'SKU: ' + (val('sku')||'—'));
 
-      setText('mfgName', val('mfg_name')); setText('mfgLic', val('mfg_lic'));
-      setText('retName', val('ret_name')); setText('retLic', val('ret_lic'));
-      setText('uid', val('uid')); setText('batch', val('batch')); setText('date', val('date'));
-
+      setText('mfgName', val('mfg_name'));
+      setText('mfgLic', val('mfg_lic'));
+      setText('retName', val('ret_name'));
+      setText('retLic', val('ret_lic'));
+      setText('uid', val('uid'));
+      setText('batch', val('batch'));
+      setText('date', val('date'));
       setText('thcServing', val('thc_serving'));
       setText('thcPackage', val('thc_package'));
       setText('servings', val('servings'));
@@ -481,13 +484,13 @@
 
       setHref('coaLink', val('coa') || '#');
 
-      const formFromSheet =
-        val('form') || val('Form') || val('google_form') || val('rewards_form') || val('Rewards Form');
+      const rewardsUrl = new URL('rewards-start.html', location.href);
+      const skuValue = val('sku');
+      const batchValue = val('batch');
+      if (skuValue) rewardsUrl.searchParams.set('sku', skuValue);
+      if (batchValue) rewardsUrl.searchParams.set('batch', batchValue);
+      setHref('rewardsBtn', rewardsUrl.toString());
 
-      const finalForm = (formFromSheet && formFromSheet.trim()) ? formFromSheet.trim() : CONFIG.fallbackForm;
-      setHref('rewardsBtn', finalForm);
-
-      // Nutrition fields (add these columns to your CSV when ready)
       const nf = {
         servingSize: val('nf_serving_size') || val('nutrition_serving_size'),
         servingsPerContainer: val('nf_servings_per_container') || val('nutrition_servings_per_container'),
