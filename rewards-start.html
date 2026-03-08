@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Bongos Rewards</title>
+  <style>
+    :root{
+      --brand:#0f9d58;
+      --ink:#0b1220;
+      --muted:#5b6471;
+      --bg:#ffffff;
+      --panel:#f6f8fa;
+      --radius:14px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      color:var(--ink);
+      background:var(--bg);
+    }
+    .wrap{
+      max-width:720px;
+      margin:0 auto;
+      padding:22px;
+    }
+    .card{
+      background:var(--panel);
+      border-radius:var(--radius);
+      padding:20px;
+      border:1px solid #e6e8eb;
+      margin:16px 0;
+    }
+    .logo{
+      text-align:center;
+      margin-bottom:14px;
+    }
+    .logo img{
+      height:90px;
+      max-width:100%;
+    }
+    h1{
+      font-size:28px;
+      margin:0 0 10px;
+      text-align:center;
+    }
+    .muted{
+      color:var(--muted);
+      text-align:center;
+    }
+    .field{
+      margin:12px 0;
+    }
+    label{
+      display:block;
+      font-weight:700;
+      margin-bottom:6px;
+    }
+    input{
+      width:100%;
+      padding:12px 14px;
+      border:1px solid #d6dae0;
+      border-radius:12px;
+      font:inherit;
+    }
+    .btn{
+      display:inline-block;
+      width:100%;
+      background:var(--brand);
+      color:#fff;
+      text-decoration:none;
+      border:none;
+      border-radius:12px;
+      padding:14px 16px;
+      font-weight:800;
+      cursor:pointer;
+      font:inherit;
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <div class="logo">
+      <img src="https://raw.githubusercontent.com/Bongosrewards/bongos-rewards/main/Bongos%20Logo%20Final.png" alt="Bongos" />
+    </div>
+
+    <h1>Bongos Rewards</h1>
+    <p class="muted">Enter your info once to speed up future reward claims.</p>
+
+    <form id="rewardsStartForm">
+      <div class="field">
+        <label for="fullName">Full Name</label>
+        <input id="fullName" type="text" required />
+      </div>
+
+      <div class="field">
+        <label for="emailAddress">Email Address</label>
+        <input id="emailAddress" type="email" required />
+      </div>
+
+      <button class="btn" type="submit">Continue to Rewards Form</button>
+    </form>
+  </div>
+</div>
+
+<script>
+  const FORM_URL = "PASTE_YOUR_GOOGLE_FORM_PREFILL_BASE_URL_HERE";
+  const NAME_ENTRY = "entry.123456789";
+  const EMAIL_ENTRY = "entry.987654321";
+
+  const saved = localStorage.getItem("bongosCustomer");
+  if (saved) {
+    try {
+      const customer = JSON.parse(saved);
+      if (customer.name) document.getElementById("fullName").value = customer.name;
+      if (customer.email) document.getElementById("emailAddress").value = customer.email;
+    } catch(e) {}
+  }
+
+  document.getElementById("rewardsStartForm").addEventListener("submit", function(e){
+    e.preventDefault();
+
+    const name = document.getElementById("fullName").value.trim();
+    const email = document.getElementById("emailAddress").value.trim();
+
+    localStorage.setItem("bongosCustomer", JSON.stringify({
+      name: name,
+      email: email
+    }));
+
+    const url =
+      FORM_URL +
+      "?" + NAME_ENTRY + "=" + encodeURIComponent(name) +
+      "&" + EMAIL_ENTRY + "=" + encodeURIComponent(email);
+
+    window.location.href = url;
+  });
+</script>
+</body>
+</html>
