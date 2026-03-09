@@ -108,6 +108,16 @@
       justify-content:center;
       margin-top:10px;
     }
+    .msg{
+      background:#fdecea;
+      border:1px solid #f5c2c7;
+      color:#842029;
+      padding:12px;
+      border-radius:10px;
+      margin-top:12px;
+      display:none;
+      text-align:center;
+    }
   </style>
 </head>
 <body>
@@ -137,9 +147,9 @@
     </p>
 
     <form id="communityForm"
-          action="https://docs.google.com/forms/d/e/1FAIpQLSc1LPl9zBr_WjJ2L8WK1k8R6lrYx4r1Ze2cpSRXni2z1ecWbQ/formResponse"
-          method="POST"
-          target="hidden_iframe">
+      action="https://docs.google.com/forms/d/e/1FAIpQLSc1LPl9zBr_WjJ2L8WK1k8R6lrYx4r1Ze2cpSRXni2z1ecWbQ/formResponse"
+      method="POST"
+      target="hidden_iframe">
 
       <div class="field">
         <label for="fullName">Full Name</label>
@@ -151,14 +161,17 @@
         <input id="emailAddress" name="entry.440360296" type="email" required />
       </div>
 
-      <button class="btn" type="submit">Join Community</button>
+      <button class="btn" id="submitBtn" type="submit">Join Community</button>
+      <div id="errorBox" class="msg"></div>
     </form>
 
-    <iframe name="hidden_iframe" style="display:none;"></iframe>
+    <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
   </div>
 </div>
 
 <script>
+  let formSubmitted = false;
+
   function allow(){
     const gate = document.getElementById('ageGate');
     if (gate) gate.style.display = 'none';
@@ -172,10 +185,31 @@
   document.getElementById('btnYes').addEventListener('click', allow);
   document.getElementById('btnNo').addEventListener('click', deny);
 
-  document.getElementById('communityForm').addEventListener('submit', function() {
-    setTimeout(function(){
+  const form = document.getElementById('communityForm');
+  const iframe = document.getElementById('hidden_iframe');
+  const errorBox = document.getElementById('errorBox');
+
+  iframe.addEventListener('load', function () {
+    if (formSubmitted) {
       window.location.href = 'community-thank-you.html';
-    }, 2500);
+    }
+  });
+
+  form.addEventListener('submit', function(e) {
+    errorBox.style.display = 'none';
+    errorBox.textContent = '';
+
+    const name = document.getElementById('fullName').value.trim();
+    const email = document.getElementById('emailAddress').value.trim();
+
+    if (!name || !email) {
+      e.preventDefault();
+      errorBox.textContent = 'Please enter your name and email.';
+      errorBox.style.display = 'block';
+      return;
+    }
+
+    formSubmitted = true;
   });
 </script>
 
