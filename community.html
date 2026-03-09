@@ -1,4 +1,4 @@
- <!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -137,18 +137,18 @@
     </p>
 
     <form id="communityForm"
-          action="https://docs.google.com/forms/d/1wSh_AXaSAUitrUEEXpZng6FXXu93yWagmUZrJx0L1YY"
+          action="FORM_RESPONSE_URL"
           method="POST"
           target="hidden_iframe">
-      
+
       <div class="field">
         <label for="fullName">Full Name</label>
-        <input id="fullName" name="entry.2065872804" type="text" required />
+        <input id="fullName" name="NAME_ENTRY" type="text" required />
       </div>
 
       <div class="field">
         <label for="emailAddress">Email Address</label>
-        <input id="emailAddress" name="entry.440360296" type="email" required />
+        <input id="emailAddress" name="EMAIL_ENTRY" type="email" required />
       </div>
 
       <button class="btn" type="submit">Join Community</button>
@@ -160,7 +160,6 @@
 
 <script>
   function allow(){
-    try { localStorage.setItem('bongos21', '1'); } catch(e){}
     const gate = document.getElementById('ageGate');
     if (gate) gate.style.display = 'none';
   }
@@ -173,17 +172,10 @@
   document.getElementById('btnYes').addEventListener('click', allow);
   document.getElementById('btnNo').addEventListener('click', deny);
 
-  try {
-    if (localStorage.getItem('bongos21') === '1') {
-      const gate = document.getElementById('ageGate');
-      if (gate) gate.style.display = 'none';
-    }
-  } catch(e) {}
-
   document.getElementById('communityForm').addEventListener('submit', function() {
     setTimeout(function(){
       window.location.href = 'community-thank-you.html';
-    }, 1200);
+    }, 2500);
   });
 </script>
 
