@@ -146,31 +146,27 @@
       Get early access to new flavors, exclusive drops, event invites, and community updates.
     </p>
 
-    <form id="communityForm"
-      action="https://docs.google.com/forms/d/e/1FAIpQLSc1LPl9zBr_WjJ2L8WK1k8R6lrYx4r1Ze2cpSRXni2z1ecWbQ/formResponse"
-      method="POST"
-      target="hidden_iframe">
-
+    <form id="communityForm">
       <div class="field">
         <label for="fullName">Full Name</label>
-        <input id="fullName" name="entry.2065872804" type="text" required />
+        <input id="fullName" type="text" required />
       </div>
 
       <div class="field">
         <label for="emailAddress">Email Address</label>
-        <input id="emailAddress" name="entry.440360296" type="email" required />
+        <input id="emailAddress" type="email" required />
       </div>
 
-      <button class="btn" id="submitBtn" type="submit">Join Community</button>
+      <button class="btn" type="submit">Continue</button>
       <div id="errorBox" class="msg"></div>
     </form>
-
-    <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
   </div>
 </div>
 
 <script>
-  let formSubmitted = false;
+  const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSc1LPl9zBr_WjJ2L8WK1k8R6lrYx4r1Ze2cpSRXni2z1ecWbQ/viewform";
+  const NAME_ENTRY = "entry.2065872804";
+  const EMAIL_ENTRY = "entry.440360296";
 
   function allow(){
     const gate = document.getElementById('ageGate');
@@ -186,30 +182,43 @@
   document.getElementById('btnNo').addEventListener('click', deny);
 
   const form = document.getElementById('communityForm');
-  const iframe = document.getElementById('hidden_iframe');
   const errorBox = document.getElementById('errorBox');
 
-  iframe.addEventListener('load', function () {
-    if (formSubmitted) {
-      window.location.href = 'community-thank-you.html';
-    }
-  });
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
 
-  form.addEventListener('submit', function(e) {
     errorBox.style.display = 'none';
     errorBox.textContent = '';
 
-    const name = document.getElementById('fullName').value.trim();
+    const fullName = document.getElementById('fullName').value.trim();
     const email = document.getElementById('emailAddress').value.trim();
 
-    if (!name || !email) {
-      e.preventDefault();
+    if (!fullName || !email) {
       errorBox.textContent = 'Please enter your name and email.';
       errorBox.style.display = 'block';
       return;
     }
 
-    formSubmitted = true;
+    try {
+      const u = new URL(FORM_URL);
+      u.searchParams.set('usp', 'pp_url');
+      u.searchParams.set(NAME_ENTRY, fullName);
+      u.searchParams.set(EMAIL_ENTRY, email);
+
+      const qs = new URLSearchParams(window.location.search);
+      const ref = qs.get('ref');
+      const sku = qs.get('sku');
+      const batch = qs.get('batch');
+
+      if (ref) u.searchParams.set('entry.999999999', ref);
+      if (sku) localStorage.setItem('bongosCommunitySku', sku);
+      if (batch) localStorage.setItem('bongosCommunityBatch', batch);
+
+      window.location.href = u.toString();
+    } catch (err) {
+      errorBox.textContent = 'Something went wrong. Please try again.';
+      errorBox.style.display = 'block';
+    }
   });
 </script>
 
