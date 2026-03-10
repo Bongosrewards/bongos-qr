@@ -167,6 +167,7 @@
   const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSc1LPl9zBr_WjJ2L8WK1k8R6lrYx4r1Ze2cpSRXni2z1ecWbQ/viewform";
   const NAME_ENTRY = "entry.2065872804";
   const EMAIL_ENTRY = "entry.440360296";
+  const REFERRAL_ENTRY = "entry.1752381403";
 
   function allow(){
     const gate = document.getElementById('ageGate');
@@ -206,15 +207,15 @@
       u.searchParams.set(EMAIL_ENTRY, email);
 
       const qs = new URLSearchParams(window.location.search);
-      const ref = qs.get('ref');
-      const sku = qs.get('sku');
-      const batch = qs.get('batch');
+const ref = qs.get('ref');
+const sku = qs.get('sku');
+const batch = qs.get('batch');
 
-      if (ref) u.searchParams.set('entry.999999999', ref);
-      if (sku) localStorage.setItem('bongosCommunitySku', sku);
-      if (batch) localStorage.setItem('bongosCommunityBatch', batch);
+if (ref) u.searchParams.set(REFERRAL_ENTRY, ref);
+if (sku) localStorage.setItem('bongosCommunitySku', sku);
+if (batch) localStorage.setItem('bongosCommunityBatch', batch);
 
-      window.location.href = u.toString();
+window.location.href = u.toString();
     } catch (err) {
       errorBox.textContent = 'Something went wrong. Please try again.';
       errorBox.style.display = 'block';
